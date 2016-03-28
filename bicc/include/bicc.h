@@ -271,7 +271,7 @@ struct bicc_graph
 		{
 			int component_number = it->first;
 
-			if(it->second.size() > 1)
+			if(it->second.size() > 0)
 			{
 				++file_output_count;
 

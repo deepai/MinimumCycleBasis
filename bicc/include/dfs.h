@@ -70,10 +70,12 @@ struct DFS
 	std::unordered_map<unsigned long long,int> *edge_map;
 
 	std::list<std::pair<int,std::list<int>*> > store_biconnected_edges;
+	bool keep_bridges = true;
 
 	DFS(int c_number,int *new_c_number,bicc_graph *gr,
 		std::list<int> *bi_edges,dfs_helper *helper_struct,
-		std::unordered_map<unsigned long long,int> *bi_map)
+		std::unordered_map<unsigned long long,int> *bi_map,
+		bool keep_bridges_param)
 	{
 		component_number = c_number;
 		new_component_number = new_c_number;
@@ -82,6 +84,7 @@ struct DFS
 		helper = helper_struct;
 		count_bridges = 0;
 		edge_map = bi_map;
+		keep_bridges = keep_bridges_param;
 		time = 0;
 
 	}
@@ -232,7 +235,14 @@ struct DFS
 					else if(edges_per_component->size() == 1)
 					{
 						count_bridges++;
-						edges_per_component->clear();
+						if(!keep_bridges)
+							edges_per_component->clear();
+						else
+						{
+							int bcc_no = ++(*new_component_number);
+							store_biconnected_edges.push_back(
+								std::make_pair(bcc_no,edges_per_component));
+						}
 
 						////debug("Identified Bridge");
 					}
@@ -263,7 +273,7 @@ struct DFS
  */
 int dfs_bicc_initializer(unsigned src,int bicc_number,int &new_bicc_number,bicc_graph *graph,
 	dfs_helper *helper,std::unordered_map<unsigned long long,int> *edge_map,
-	std::unordered_map<int,std::list<int>* > &edge_list_component)
+	std::unordered_map<int,std::list<int>* > &edge_list_component,bool keep_bridges)
 {
 	int j = 1;
 
@@ -275,7 +285,7 @@ int dfs_bicc_initializer(unsigned src,int bicc_number,int &new_bicc_number,bicc_
 	//////debug("");
 
 	//dfs(src,bicc_number,new_bicc_number,graph,bicc_edges,helper,count,bicc_pair,edge_map);
-	DFS *dfs_worker = new DFS(bicc_number,&new_bicc_number,graph,bicc_edges,helper,edge_map);
+	DFS *dfs_worker = new DFS(bicc_number,&new_bicc_number,graph,bicc_edges,helper,edge_map,keep_bridges);
 	dfs_worker->dfs(src);
 
 	std::list<int> *edges_per_component = new std::list<int>();
@@ -309,7 +319,16 @@ int dfs_bicc_initializer(unsigned src,int bicc_number,int &new_bicc_number,bicc_
 	else if(edges_per_component->size() == 1)
 	{
 		dfs_worker->count_bridges++;
-		edges_per_component->clear();
+		if(!keep_bridges)
+		{
+			edges_per_component->clear();
+		}
+		else
+		{
+			int bcc_no = ++new_bicc_number;
+			dfs_worker->store_biconnected_edges.push_back(
+				std::make_pair(bcc_no,edges_per_component));
+		}
 
 		////debug("Identified Bridge");
 	}

@@ -8,7 +8,7 @@ CC=g++
 CFLAGS=-I$(IDIR) -I$(EX_INCLUDE) -fopenmp -lgomp -g -w -std=c++11 -fpermissive
 CXXFLAGS = -I$(IDIR) -I$(EX_INCLUDE) -fopenmp -lgomp -g -w -std=c++11 -fpermissive
 
-DFLAGS = -DMULTI_THREAD -DPRINT -DNDEBUG
+DFLAGS = -DMULTI_THREAD -DPRINT -DNDEBUG -DVERBOSE
 
 #-DMULTI_THREAD for multi-thread support
 #-DPRINT to print the bccs in a file
