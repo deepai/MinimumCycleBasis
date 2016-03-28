@@ -1,0 +1,3 @@
+bicc/*.o
+bicc/bicc_decomposition
+include/*.o
