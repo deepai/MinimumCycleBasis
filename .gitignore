@@ -1,3 +1,5 @@
 bicc/*.o
 bicc/bicc_decomposition
 include/*.o
+mcb/*.o
+mcb/mcb_cycle
