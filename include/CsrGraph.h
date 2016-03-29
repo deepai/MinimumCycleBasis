@@ -74,7 +74,8 @@ public:
 		weights->clear();
 	}
 
-	std::vector<unsigned> *get_spanning_tree(std::vector<unsigned> **non_tree_edges);
+	std::vector<unsigned> *get_spanning_tree(std::vector<unsigned> **non_tree_edges,
+		std::vector<unsigned> *ear_decomposition);
 
 	inline void get_edge_endpoints(unsigned &row,unsigned &col,unsigned &index)
 	{
