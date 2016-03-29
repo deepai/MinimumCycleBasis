@@ -1,5 +1,6 @@
 bicc/*.o
 bicc/bicc_decomposition
+bicc/Relabeller
 include/*.o
 mcb/*.o
 mcb/mcb_cycle
