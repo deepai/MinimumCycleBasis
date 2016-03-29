@@ -41,9 +41,9 @@ struct bicc_graph
 
 	//Insert edge between i and j. If direction == 0 , Insert i->j and j->i , 
 	//else if direction == 1 , insert only i->j
-	void insert_edge(int i,int j,bool direction)
+	void insert_edge(int i,int j,int weight,bool direction)
 	{
-		c_graph->insert(i,j,direction);
+		c_graph->insert(i,j,weight,direction);
 	}
 
 	void calculate_nodes_edges()
@@ -288,8 +288,9 @@ struct bicc_graph
 
 					int src_vtx = c_graph->rows->at(edge_index);
 					int dest_vtx = c_graph->columns->at(edge_index);
+					int weight = c_graph->weights->at(edge_index);
 
-					fout.write_edge(src_vtx,dest_vtx);
+					fout.write_edge(src_vtx,dest_vtx,weight);
 				}
 
 				fout.fileClose();

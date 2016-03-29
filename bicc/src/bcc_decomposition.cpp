@@ -80,7 +80,7 @@ int main(int argc,char* argv[])
 		//Read the Inputfile.
 		FileReader Reader(InputFilePath.c_str());
 
-		int v1,v2,Initial_Vertices;;
+		int v1,v2,Initial_Vertices,weight;;
 
 		int nodes,edges;
 
@@ -96,8 +96,8 @@ int main(int argc,char* argv[])
 		 */
 		for(int i=0;i<edges;i++)
 		{
-			Reader.read_edge(v1,v2);
-			graph->insert_edge(v1,v2,false);
+			Reader.read_edge(v1,v2,weight);
+			graph->insert_edge(v1,v2,weight,false);
 		}
 
 		graph->calculate_nodes_edges();

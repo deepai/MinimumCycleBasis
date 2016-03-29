@@ -34,7 +34,7 @@ public:
 	std::vector<unsigned> *rows;
 
 	std::vector<unsigned> *degree;
-	std::vector<unsigned> *weights;
+	std::vector<int> *weights;
 
 	csr_graph()
 	{
@@ -42,18 +42,18 @@ public:
 		columns    = new std::vector<unsigned>();
 		rows       = new std::vector<unsigned>();
 		degree     = new std::vector<unsigned>();
-		weights    = new std::vector<unsigned>();
+		weights    = new std::vector<int>();
 	}
 
 
-	void insert(int a,int b,unsigned wt,bool direction)
+	void insert(int a,int b,int wt,bool direction)
 	{
 		columns->push_back(b);
 		rows->push_back(a);
 		weights->push_back(wt);
 
 		if(!direction)
-			insert(b,a,true);
+			insert(b,a,wt,true);
 	}
 
 	void insert(int a,int b,bool direction)
@@ -158,7 +158,7 @@ public:
 		for(int i=0;i<rows->size();i++)
 		{
 			if(rows->at(i) > columns->at(i))
-				Writer.write_edge(rows->at(i),columns->at(i));
+				Writer.write_edge(rows->at(i),columns->at(i),weights->at(i));
 		}
 
 		Writer.fileClose();

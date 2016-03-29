@@ -43,7 +43,7 @@ public:
         	exit(1);
     	}
 
-    	if(!(mm_is_matrix(matcode) && mm_is_coordinate(matcode) && mm_is_pattern(matcode) &&  (mm_is_symmetric(matcode) || mm_is_general(matcode) ) ))
+    	if(!(mm_is_matrix(matcode) && mm_is_coordinate(matcode) && mm_is_integer(matcode) &&  (mm_is_symmetric(matcode) || mm_is_general(matcode) ) ))
     	{
     		ERROR("Sorry, this application does not support this mtx file. \n");
         	exit(1);
@@ -62,9 +62,9 @@ public:
 		edges = Edges;
 	}
 
-	void read_edge(int &u,int &v)
+	void read_edge(int &u,int &v,int &weight)
 	{
-		fscanf(InputFileName, "%d %d", &u,&v);
+		fscanf(InputFileName, "%d %d %d", &u,&v,&weight);
 	    	u--;
 	    	v--;
     	// if(u >= v)

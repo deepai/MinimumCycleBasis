@@ -43,16 +43,16 @@ public:
     mm_initialize_typecode(&matcode);
     mm_set_matrix(&matcode);
     mm_set_coordinate(&matcode);
-    mm_set_pattern(&matcode);
+    mm_set_integer(&matcode);
     mm_set_symmetric(&matcode);
 
     mm_write_banner(OutputFileName, matcode);
     mm_write_mtx_crd_size(OutputFileName,Nodes,Nodes,Edges);
   }
 
-  void write_edge(int u,int v)
+  void write_edge(int u,int v,int weight)
   {
-    fprintf(OutputFileName, "%d %d\n", u + 1,v + 1);
+    fprintf(OutputFileName, "%d %d %d\n", u + 1,v + 1,weight);
   }
 
   FILE *get_file()
