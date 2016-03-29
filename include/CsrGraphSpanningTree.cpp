@@ -1,54 +1,127 @@
-#include <queue>
+#include <stack>
 #include "CsrGraph.h"
 
 /**
  * @brief This method is used to obtain the spanning tree of a graph. The spanning tree contains edge offsets from the csr_graph
- * @details 
+ * @details This method may also return the list of non_tree_edges and ear decomposition corresponding to every non-tree 
+ * 	    edges.
  *  
- * @param  address of an vector for storing non_tree_edges;
+ * @param  address of an vector for storing non_tree_edges,ear decomposition vector;
  * @return vector of edge_offsets in bfs ordering.
  */
-std::vector<unsigned> *csr_graph::get_spanning_tree(std::vector<unsigned> **non_tree_edges)
+std::vector<unsigned> *csr_graph::get_spanning_tree(std::vector<unsigned> **non_tree_edges,
+						    std::vector<unsigned> *ear_decomposition)
 {
-	std::vector<unsigned> *spanning_tree = 
-		new std::vector<unsigned>();
-
-	std::vector<bool> *visited = new std::vector<bool>(Nodes);
-	for(int i=0;i<Nodes;i++)
-		visited->at(i) = false;
-
-	std::queue<unsigned> bfs_queue;
-
-	bfs_queue.push(rows->at(0));
-
-	visited->at(rows->at(0)) = true;
-
-	while(!bfs_queue.empty())
+	struct DFS_HELPER
 	{
-		unsigned row = bfs_queue.front();
-		bfs_queue.pop();
+		int Nodes;
 
-		for(unsigned offset = rowOffsets->at(row); offset < rowOffsets->at(row + 1); offset++)
+		std::vector<unsigned> *spanning_tree;
+		std::vector<bool> *visited;
+		std::vector<unsigned> *ear_decomposition_internal;
+
+		std::vector<unsigned> *rows_internal;
+		std::vector<unsigned> *columns_internal;
+		std::vector<unsigned> *rowOffsets_internal;
+
+		std::vector<unsigned> **non_tree_edges_internal;
+		std::vector<unsigned> *stack;
+
+		int ear_count;
+
+		DFS_HELPER(std::vector<unsigned> **non_tree_edges,
+			   std::vector<unsigned> *rows,
+			   std::vector<unsigned> *columns,
+			   std::vector<unsigned> *rowOffsets,
+			   std::vector<unsigned> *ear_decomposition,
+			   int _nodes)
 		{
-			unsigned column = columns->at(offset);
-			if(!visited->at(column))
-			{
-				visited->at(column) = true;
-				spanning_tree->push_back(offset);
-			}
-			else
-			{
-				if((row < column) && (*non_tree_edges != NULL))
-					(*non_tree_edges)->push_back(offset);
-			}
+			spanning_tree = new std::vector<unsigned>();
+			visited = new std::vector<bool>();
+			stack = new std::vector<unsigned>();
+			Nodes = _nodes;
+			ear_count = 0;
+			
+			for(int i=0;i<Nodes;i++)
+				visited->push_back(false);
+
+			non_tree_edges_internal = non_tree_edges;
+
+			rows_internal = rows;
+			columns_internal = columns;
+			rowOffsets_internal = rowOffsets;
+
+			ear_decomposition_internal = ear_decomposition;
+
+			assert((ear_decomposition_internal->size() == Nodes + 1)); 
 		}
-	}
 
-	visited->clear();
+		void dfs(unsigned row)
+		{
+			visited->at(row) = true;
 
-	assert (spanning_tree->size() == Nodes - 1);
-	assert ((*non_tree_edges == NULL) || ((*non_tree_edges)->size() == (rows->size()/2 - Nodes + 1)));
+			stack->push_back(row);
+
+			for(unsigned offset = rowOffsets_internal->at(row); offset < rowOffsets_internal->at(row + 1); 
+				offset++)
+			{
+				unsigned column = columns_internal->at(offset);
+				if(!visited->at(column))
+				{
+					visited->at(column) = true;
+					spanning_tree->push_back(offset);
+					dfs(column);
+				}
+				else
+				{
+					if((column > row) && (*non_tree_edges_internal != NULL))
+						(*non_tree_edges_internal)->push_back(offset);
+					else
+						continue;
+
+					ear_count++;
+
+					if(ear_decomposition_internal != NULL)
+					{
+						for(std::vector<unsigned>::reverse_iterator it = stack->rbegin();
+						it != stack->rend(); it++)
+						{
+							if(ear_decomposition_internal->at(*it) == 0)
+								ear_decomposition_internal->at(*it) = ear_count;
+							else
+								break;
+						}
+					}
+
+				}
+			}
+
+			stack->pop_back();
+		}
+
+		std::vector<unsigned> *run_dfs(unsigned row)
+		{
+			dfs(row);
+
+			assert (spanning_tree->size() == Nodes - 1);
+
+			if(ear_decomposition_internal != NULL)
+				ear_decomposition_internal->at(Nodes) = ear_count;
+
+			return spanning_tree;
+		}
+
+		~DFS_HELPER()
+		{
+			visited->clear();
+			stack->clear();
+		}
+
+	};
+
+	DFS_HELPER helper(non_tree_edges,rows,columns,rowOffsets,ear_decomposition,Nodes);
+
+	std::vector<unsigned> *spanning_tree = helper.run_dfs(rows->at(0));
 
 	return spanning_tree;
-
 }

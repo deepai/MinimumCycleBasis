@@ -22,7 +22,7 @@ class FileReader
 
 	inline void ERROR(std::string ch)
 	{
-    	std::cerr << RED << ch << " " << RESET;
+    		std::cerr << RED << ch << " " << RESET;
 	}
 
 

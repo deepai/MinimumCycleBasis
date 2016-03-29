@@ -19,6 +19,7 @@
 #include "utils.h"
 #include "Host_Timer.h"
 #include "CsrGraph.h"
+#include "CsrTree.h"
 
 debugger dbg;
 HostTimer globalTimer;
@@ -30,7 +31,7 @@ double totalTime = 0;
 
 int main(int argc,char* argv[])
 {
-	if(argc < 5)
+	if(argc < 4)
 	{
 		printf("Ist Argument should indicate the InputFile\n");
 		printf("2nd Argument should indicate the outputdirectory\n");
@@ -42,6 +43,8 @@ int main(int argc,char* argv[])
 
 	if(argc == 4)
 		num_threads = atoi(argv[3]);
+
+	InputFileName = argv[1];
 
     	omp_set_num_threads(num_threads);
 
@@ -61,7 +64,6 @@ int main(int argc,char* argv[])
 	csr_graph *graph=new csr_graph();
 
 	graph->Nodes = nodes;
-
 	/*
 	 * ====================================================================================
 	 * Fill Edges.
@@ -73,10 +75,20 @@ int main(int argc,char* argv[])
 		graph->insert(v1,v2,weight,false);
 	}
 
+	graph->calculateDegreeandRowOffset();
 
 	Reader.fileClose();
 
 	debug("Input File Reading Complete...\n");
+
+	csr_tree initial_spanning_tree(graph);
+	std::vector<unsigned> *ear_decomposition = new std::vector<unsigned>(graph->Nodes + 1);
+
+	initial_spanning_tree.populate_tree_edges(true,ear_decomposition);
+
+	debug("Generating Initial Spanning Tree and Ear Decomposition");
+
+	debug("Number of Ears = ",ear_decomposition->at(graph->Nodes));
 
 	return 0;
 }
