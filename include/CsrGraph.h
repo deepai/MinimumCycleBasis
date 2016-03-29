@@ -11,6 +11,7 @@
 
 class csr_graph
 {
+	protected:
 	struct comparator
 	{
 		bool operator()(const std::pair<unsigned,unsigned> &a,const std::pair<unsigned,unsigned> &b) const
@@ -33,6 +34,7 @@ public:
 	std::vector<unsigned> *rows;
 
 	std::vector<unsigned> *degree;
+	std::vector<unsigned> *weights;
 
 	csr_graph()
 	{
@@ -40,8 +42,19 @@ public:
 		columns    = new std::vector<unsigned>();
 		rows       = new std::vector<unsigned>();
 		degree     = new std::vector<unsigned>();
+		weights    = new std::vector<unsigned>();
 	}
 
+
+	void insert(int a,int b,unsigned wt,bool direction)
+	{
+		columns->push_back(b);
+		rows->push_back(a);
+		weights->push_back(wt);
+
+		if(!direction)
+			insert(b,a,true);
+	}
 
 	void insert(int a,int b,bool direction)
 	{
@@ -58,6 +71,16 @@ public:
 		columns->clear();
 		rows->clear();
 		degree->clear();
+		weights->clear();
+	}
+
+	std::vector<unsigned> *get_spanning_tree(std::vector<unsigned> **non_tree_edges);
+
+	inline void get_edge_endpoints(unsigned &row,unsigned &col,unsigned &index)
+	{
+		assert (index < rows->size());
+		row = rows->at(index);
+		col = columns->at(index);
 	}
 
 	//Calculate the degree of the vertices and create the rowOffset

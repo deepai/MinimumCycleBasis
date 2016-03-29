@@ -20,10 +20,10 @@ DEPS = $(patsubst %,$(IDIR)/%,$(_DEPS)) $(patsubst %,$(EX_INCLUDE)/%,$(_DEPS))
 
 OBJ = bicc_decomposition.o 
 
-_EXTRA_DEPS = mmio.o Host_Timer.o
+_EXTRA_DEPS = mmio.o Host_Timer.o CsrGraphSpanningTree.o
 EXTRA_DEPS = $(patsubst %,$(EX_INCLUDE)/%,$(_EXTRA_DEPS))
 
-_SRC_DEPS = mmio.cpp Host_Timer.cpp
+_SRC_DEPS = mmio.cpp Host_Timer.cpp CsrGraphSpanningTree.cpp
 SRC_DEPS = $(patsubst %,$(EX_INCLUDE)/%,$(_SRC_DEPS))
 
 all: bicc_decomposition
