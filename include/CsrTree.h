@@ -27,9 +27,9 @@ public:
 		tree_edges = parent_graph->get_spanning_tree(&non_tree_edges,ear_decomposition);
 	}
 
-	inline void get_edge_endpoints(unsigned &row,unsigned &col,unsigned &offset)
+	inline void get_edge_endpoints(unsigned &row,unsigned &col,int &weight,unsigned &offset)
 	{
-		parent_graph->get_edge_endpoints(row,col,offset);
+		parent_graph->get_edge_endpoints(row,col,weight,offset);
 	}
 };
 

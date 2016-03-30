@@ -77,11 +77,12 @@ public:
 	std::vector<unsigned> *get_spanning_tree(std::vector<unsigned> **non_tree_edges,
 		std::vector<unsigned> *ear_decomposition);
 
-	inline void get_edge_endpoints(unsigned &row,unsigned &col,unsigned &index)
+	inline void get_edge_endpoints(unsigned &row,unsigned &col,int &weight,unsigned &index)
 	{
 		assert (index < rows->size());
 		row = rows->at(index);
 		col = columns->at(index);
+		weight = weights->at(index);
 	}
 
 	//Calculate the degree of the vertices and create the rowOffset
