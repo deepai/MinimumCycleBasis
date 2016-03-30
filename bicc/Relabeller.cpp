@@ -92,10 +92,16 @@ int main(int argc,char* argv[])
 		edge_lists[i].clear();
 	}
 
+	FILE *file = fout.get_file();
+
+	fprintf(file, "%d\n",0);
+	fprintf(file, "%d\n",nodes);
+	fprintf(file, "%d\n",forward_order.size());
+
 	for(std::unordered_map<unsigned,unsigned>::iterator it = forward_order.begin(); it!=forward_order.end();
 		it++)
 	{
-		fout.write_edge(it->second,it->first,-1);
+		fprintf(file,"%d %d\n",it->second,it->first);
 	}
 
 	fout.fileClose();
