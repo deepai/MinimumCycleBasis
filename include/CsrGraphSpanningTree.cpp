@@ -74,12 +74,12 @@ std::vector<unsigned> *csr_graph::get_spanning_tree(std::vector<unsigned> **non_
 				}
 				else
 				{
+					bool ear_incremented = false;
+
 					if((column > row) && (*non_tree_edges_internal != NULL))
 						(*non_tree_edges_internal)->push_back(offset);
 					else
 						continue;
-
-					ear_count++;
 
 					if(ear_decomposition_internal != NULL)
 					{
@@ -87,12 +87,16 @@ std::vector<unsigned> *csr_graph::get_spanning_tree(std::vector<unsigned> **non_
 						it != stack->rend(); it++)
 						{
 							if(ear_decomposition_internal->at(*it) == 0)
-								ear_decomposition_internal->at(*it) = ear_count;
+							{
+								ear_decomposition_internal->at(*it) = ear_count + 1;
+								ear_incremented = true;
+							}
 							else
 								break;
 						}
 					}
-
+					if(ear_incremented)
+						ear_count++;
 				}
 			}
 
