@@ -27,6 +27,8 @@ std::vector<unsigned> *csr_graph::get_spanning_tree(std::vector<unsigned> **non_
 		std::vector<unsigned> **non_tree_edges_internal;
 		std::vector<unsigned> *stack;
 
+		std::vector<int> *parent;
+
 		int ear_count;
 
 		DFS_HELPER(std::vector<unsigned> **non_tree_edges,
@@ -39,11 +41,16 @@ std::vector<unsigned> *csr_graph::get_spanning_tree(std::vector<unsigned> **non_
 			spanning_tree = new std::vector<unsigned>();
 			visited = new std::vector<bool>();
 			stack = new std::vector<unsigned>();
+			parent = new std::vector<int>();
+
 			Nodes = _nodes;
 			ear_count = 0;
 			
 			for(int i=0;i<Nodes;i++)
+			{
+				parent->push_back(-1);
 				visited->push_back(false);
+			}
 
 			non_tree_edges_internal = non_tree_edges;
 
@@ -70,14 +77,17 @@ std::vector<unsigned> *csr_graph::get_spanning_tree(std::vector<unsigned> **non_
 				{
 					visited->at(column) = true;
 					spanning_tree->push_back(offset);
+					parent->at(column) = row;
 					dfs(column);
 				}
 				else
 				{
 					bool ear_incremented = false;
 
-					if((column > row) && (*non_tree_edges_internal != NULL))
-						(*non_tree_edges_internal)->push_back(offset);
+					if( column == parent->at(row) )
+						continue;
+
+					(*non_tree_edges_internal)->push_back(offset);
 
 					if(ear_decomposition_internal != NULL)
 					{
@@ -117,6 +127,7 @@ std::vector<unsigned> *csr_graph::get_spanning_tree(std::vector<unsigned> **non_
 		{
 			visited->clear();
 			stack->clear();
+			parent->clear();
 		}
 
 	};
