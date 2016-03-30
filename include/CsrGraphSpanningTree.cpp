@@ -78,8 +78,6 @@ std::vector<unsigned> *csr_graph::get_spanning_tree(std::vector<unsigned> **non_
 
 					if((column > row) && (*non_tree_edges_internal != NULL))
 						(*non_tree_edges_internal)->push_back(offset);
-					else
-						continue;
 
 					if(ear_decomposition_internal != NULL)
 					{
