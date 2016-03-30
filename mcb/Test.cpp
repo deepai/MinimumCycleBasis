@@ -88,7 +88,7 @@ int main(int argc,char* argv[])
 
 	debug("Generating Initial Spanning Tree and Ear Decomposition");
 
-	debug("Number of Ears = ",ear_decomposition->at(graph->Nodes) + 1);
+	debug("Number of Ears = ",ear_decomposition->at(graph->Nodes));
 
 	debug("Tree - Edges");
 
