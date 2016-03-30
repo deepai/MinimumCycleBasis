@@ -4,3 +4,4 @@ bicc/Relabeller
 include/*.o
 mcb/*.o
 mcb/mcb_cycle
+mcb/Test
