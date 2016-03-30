@@ -25,12 +25,18 @@ EXTRA_DEPS = $(patsubst %,$(EX_INCLUDE)/%,$(_EXTRA_DEPS))
 
 OBJ = mcb_cycle.o
 
-all: mcb_cycle
+all: mcb_cycle Test
 
 mcb_cycle: $(OBJ) $(EXTRA_DEPS)
 	$(CC) -o $@ $^ $(CFLAGS) $(LIBS) $(DFLAGS)
 
 mcb_cycle.o: mcb_cycle.cpp $(DEPS)
+	$(CC) -c -o $@ $< $(CFLAGS) $(DFLAGS)
+
+Test: Test.o $(EXTRA_DEPS)
+	$(CC) -o $@ $^ $(CFLAGS) $(LIBS) $(DFLAGS)
+
+Test.o: Test.cpp $(DEPS)
 	$(CC) -c -o $@ $< $(CFLAGS) $(DFLAGS)
 
 #$(include)/%.o: $(include)/%.cpp $(DEPS)

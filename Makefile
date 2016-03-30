@@ -10,4 +10,5 @@ clean:
 	rm bicc/bicc_decomposition
 	rm mcb/*.o
 	rm mcb/mcb_cycle
+	rm mcb/Test
 	rm include/*.o
