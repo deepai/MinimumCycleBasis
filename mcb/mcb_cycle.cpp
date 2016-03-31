@@ -20,6 +20,7 @@
 #include "Host_Timer.h"
 #include "CsrGraph.h"
 #include "CsrTree.h"
+#include "CsrGraphMulti.h"
 
 debugger dbg;
 HostTimer globalTimer;
@@ -113,7 +114,7 @@ int main(int argc,char* argv[])
 
 	debug ("Number of nodes removed = ",nodes_removed);
 
-	csr_graph *reduced_graph = graph->get_modified_graph(remove_edge_list,edges_new_list,nodes_removed);
+	csr_multi_graph *reduced_graph = graph->get_modified_graph(remove_edge_list,edges_new_list,nodes_removed);
 
 	return 0;
 }

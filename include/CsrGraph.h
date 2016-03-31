@@ -215,6 +215,8 @@ public:
 
 		new_reduced_graph->calculateDegreeandRowOffset();
 
+		filter_edges.clear();
+
 		return new_reduced_graph;
 	}
 
