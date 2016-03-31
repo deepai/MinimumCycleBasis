@@ -75,7 +75,9 @@ public:
 	}
 
 	std::vector<unsigned> *get_spanning_tree(std::vector<unsigned> **non_tree_edges,
-		std::vector<unsigned> *ear_decomposition);
+		std::vector<unsigned> *ear_decomposition,int src);
+
+	std::vector<unsigned> *mark_degree_two_chains(std::vector<std::vector<unsigned> > **chain,int &src);
 
 	inline void get_edge_endpoints(unsigned &row,unsigned &col,int &weight,unsigned &index)
 	{
@@ -127,16 +129,18 @@ public:
 			rowOffsets->at(curr_row)++;
 		}
 
-		int prev = 0,current;
+		unsigned prev = 0,current;
 
 		for(int i=0;i<=Nodes;i++)
 		{
 			current = rowOffsets->at(i);
 			rowOffsets->at(i) = prev;
 			prev += current;
+		}
 
-			if(i != Nodes )
-				degree->at(i) = current - rowOffsets->at(i);
+		for(int i=0;i<Nodes;i++)
+		{
+			degree->at(i) = rowOffsets->at(i+1) - rowOffsets->at(i);
 		}
 
 		assert(rowOffsets->at(Nodes) == rows->size());

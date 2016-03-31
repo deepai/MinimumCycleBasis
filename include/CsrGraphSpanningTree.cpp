@@ -10,7 +10,8 @@
  * @return vector of edge_offsets in bfs ordering.
  */
 std::vector<unsigned> *csr_graph::get_spanning_tree(std::vector<unsigned> **non_tree_edges,
-						    std::vector<unsigned> *ear_decomposition)
+						    std::vector<unsigned> *ear_decomposition,
+						    int src)
 {
 	struct DFS_HELPER
 	{
@@ -134,7 +135,7 @@ std::vector<unsigned> *csr_graph::get_spanning_tree(std::vector<unsigned> **non_
 
 	DFS_HELPER helper(non_tree_edges,rows,columns,rowOffsets,ear_decomposition,Nodes);
 
-	std::vector<unsigned> *spanning_tree = helper.run_dfs(rows->at(0));
+	std::vector<unsigned> *spanning_tree = helper.run_dfs(src);
 
 	return spanning_tree;
 }
