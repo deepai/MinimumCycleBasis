@@ -92,10 +92,15 @@ int main(int argc,char* argv[])
 	//initial_spanning_tree.populate_tree_edges(true,NULL,souce_vertex);
 
 	std::vector<std::vector<unsigned> > *edges_new_list = new std::vector<std::vector<unsigned> >();
+
+	int nodes_removed = 0;
+
 	for(int i=0;i<chains->size();i++)
 	{
 		unsigned row,col;
 		unsigned total_weight = graph->sum_edge_weights(chains->at(i),row,col);
+
+		nodes_removed += chains->at(i).size() - 1;
 
 		std::vector<unsigned> new_edge = std::vector<unsigned>();
 		new_edge.push_back(row);
@@ -103,9 +108,12 @@ int main(int argc,char* argv[])
 		new_edge.push_back(total_weight);
 
 		edges_new_list->push_back(new_edge);
-
 		//debug(row+1,col+1,total_weight);
 	}
+
+	debug ("Number of nodes removed = ",nodes_removed);
+
+	csr_graph *reduced_graph = graph->get_modified_graph(remove_edge_list,edges_new_list,nodes_removed);
 
 	return 0;
 }
