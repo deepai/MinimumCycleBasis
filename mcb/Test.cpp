@@ -81,10 +81,15 @@ int main(int argc,char* argv[])
 
 	debug("Input File Reading Complete...\n");
 
+	int source_vertex;
+
+	std::vector<std::vector<unsigned> > *chains = new std::vector<std::vector<unsigned> >();
+	std::vector<unsigned> *remove_edge_list = graph->mark_degree_two_chains(&chains,source_vertex);
+
 	csr_tree initial_spanning_tree(graph);
 	std::vector<unsigned> *ear_decomposition = new std::vector<unsigned>(graph->Nodes + 1);
 
-	initial_spanning_tree.populate_tree_edges(true,ear_decomposition);
+	initial_spanning_tree.populate_tree_edges(true,ear_decomposition,source_vertex);
 
 	debug("Generating Initial Spanning Tree and Ear Decomposition");
 
@@ -115,6 +120,27 @@ int main(int argc,char* argv[])
 
 	for(int i=0;i<ear_decomposition->size() - 1;i++)
 		debug(i+1,ear_decomposition->at(i));
+
+	debug("Number of degree 2 cycles =",chains->size());
+
+	for(int i=0;i<chains->size();i++)
+	{
+		for(int j=0;j<chains->at(i).size();j++)
+		{
+			printf("%u ",chains->at(i)[j]+1);
+		}
+		debug("");
+	}
+
+	debug ("Removed Edges");
+
+	for(int i=0;i<remove_edge_list->size();i++)
+	{
+		unsigned offset = remove_edge_list->at(i);
+		graph->get_edge_endpoints(row,col,weight,offset);
+
+		printf("%u - %u : %u\n",row+1,col+1,weight);
+	}
 
 	return 0;
 }

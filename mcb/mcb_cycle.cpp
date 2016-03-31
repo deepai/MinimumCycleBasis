@@ -79,16 +79,17 @@ int main(int argc,char* argv[])
 
 	Reader.fileClose();
 
+	std::vector<std::vector<unsigned> > *chains = new std::vector<std::vector<unsigned> >();
+
 	debug("Input File Reading Complete...\n");
-
-	csr_tree initial_spanning_tree(graph);
-	std::vector<unsigned> *ear_decomposition = new std::vector<unsigned>(graph->Nodes + 1);
-
-	initial_spanning_tree.populate_tree_edges(true,ear_decomposition);
-
 	debug("Generating Initial Spanning Tree and Ear Decomposition");
 
-	debug("Number of Ears = ",ear_decomposition->at(graph->Nodes));
+	csr_tree initial_spanning_tree(graph);
+
+	int souce_vertex;
+
+	std::vector<unsigned> *remove_edge_list = graph->mark_degree_two_chains(&chains,souce_vertex);
+	initial_spanning_tree.populate_tree_edges(true,NULL,souce_vertex);
 
 	return 0;
 }
