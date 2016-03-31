@@ -91,21 +91,20 @@ std::vector<unsigned> *csr_graph::mark_degree_two_chains(std::vector<std::vector
 				if( (degree_internal->at(column) == 2) && (degree_internal->at(row) == 2) )
 				{
 					//debug(row+1,column+1,"both");
-					temp_vector->push_back(row);
+					temp_vector->push_back(offset);
 					edge_removal_list->push_back(offset);
 				}
 				else if( (degree_internal->at(row) == 2) )
 				{
 					//debug(row+1,column+1,"row");
 					temp_vector = new std::vector<unsigned>();
-					temp_vector->push_back(column);
-					temp_vector->push_back(row);
+					temp_vector->push_back(offset);
 					edge_removal_list->push_back(offset);
 				}
 				else if( (degree_internal->at(column) == 2) )
 				{
 					//debug(row+1,column+1,"column");
-					temp_vector->push_back(row);
+					temp_vector->push_back(offset);
 					(*chains_internal)->push_back(*temp_vector);
 					temp_vector = NULL;
 

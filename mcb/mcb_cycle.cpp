@@ -89,7 +89,23 @@ int main(int argc,char* argv[])
 	int souce_vertex;
 
 	std::vector<unsigned> *remove_edge_list = graph->mark_degree_two_chains(&chains,souce_vertex);
-	initial_spanning_tree.populate_tree_edges(true,NULL,souce_vertex);
+	//initial_spanning_tree.populate_tree_edges(true,NULL,souce_vertex);
+
+	std::vector<std::vector<unsigned> > *edges_new_list = new std::vector<std::vector<unsigned> >();
+	for(int i=0;i<chains->size();i++)
+	{
+		unsigned row,col;
+		unsigned total_weight = graph->sum_edge_weights(chains->at(i),row,col);
+
+		std::vector<unsigned> new_edge = std::vector<unsigned>();
+		new_edge.push_back(row);
+		new_edge.push_back(col);
+		new_edge.push_back(total_weight);
+
+		edges_new_list->push_back(new_edge);
+
+		//debug(row+1,col+1,total_weight);
+	}
 
 	return 0;
 }

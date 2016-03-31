@@ -170,6 +170,19 @@ public:
 		Writer.fileClose();
 	}
 
+	unsigned sum_edge_weights(std::vector<unsigned> &edges_list , unsigned &row,unsigned &col)
+	{
+		unsigned edge_weight = 0;
+
+		for(int i=0;i<edges_list.size();i++)
+			edge_weight += weights->at(edges_list.at(i));
+
+		col = columns->at(edges_list.at(0));
+		row = rows->at(edges_list.at(edges_list.size()-1));
+
+		return edge_weight;
+	}
+
 
 };
 

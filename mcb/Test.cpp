@@ -127,7 +127,10 @@ int main(int argc,char* argv[])
 	{
 		for(int j=0;j<chains->at(i).size();j++)
 		{
-			printf("%u ",chains->at(i)[j]+1);
+			//printf("%u ",chains->at(i)[j]);
+			unsigned offset = chains->at(i)[j];
+			graph->get_edge_endpoints(row,col,weight,offset);
+			printf("%u %u\n",row+1,col+1);
 		}
 		debug("");
 	}
