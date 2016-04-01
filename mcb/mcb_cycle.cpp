@@ -85,8 +85,6 @@ int main(int argc,char* argv[])
 	debug("Input File Reading Complete...\n");
 	debug("Generating Initial Spanning Tree and Ear Decomposition");
 
-	csr_tree initial_spanning_tree(graph);
-
 	int souce_vertex;
 
 	std::vector<unsigned> *remove_edge_list = graph->mark_degree_two_chains(&chains,souce_vertex);
@@ -114,7 +112,10 @@ int main(int argc,char* argv[])
 
 	debug ("Number of nodes removed = ",nodes_removed);
 
-	csr_multi_graph *reduced_graph = graph->get_modified_graph(remove_edge_list,edges_new_list,nodes_removed);
+	csr_multi_graph *reduced_graph = csr_multi_graph::get_modified_graph(graph,
+									     remove_edge_list,
+									     edges_new_list,
+									     nodes_removed);
 
 	return 0;
 }
