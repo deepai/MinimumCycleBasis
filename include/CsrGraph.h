@@ -12,18 +12,28 @@
 class csr_graph
 {
 	protected:
-	struct comparator
+	struct edge
 	{
-		bool operator()(const std::pair<unsigned,unsigned> &a,const std::pair<unsigned,unsigned> &b) const
+		unsigned row;
+		unsigned col;
+		int weight;
+
+		edge(unsigned &r,unsigned &c,int &w)
 		{
-			if(a.first < b.first)
-				return true;
-			else if(a.first > b.first)
-				return false;
-			else
-				return (a.second < b.second);
+			row = r;
+			col = c;
+			weight = w;
 		}
-	};;
+	};
+
+	struct compare { 
+		bool operator()(const edge *a, const edge *b) const {
+			if(a->row == b->row)
+				return (a->col < b->col);
+			else
+				return (a->row < b->row);
+		}
+	};
 
 public:
 
@@ -102,21 +112,27 @@ public:
 		rowOffsets->at(Nodes) = 0;
 
 		//Allocate a pair array for rows and columns array
-		std::vector<std::pair<unsigned,unsigned> > combined;
+		std::vector<edge*> combined;
 		
 		//copy the elements from the row and column array
 		for(int i=0;i<rows->size();i++)
-			combined.push_back(std::make_pair(rows->at(i),columns->at(i)));
+			combined.push_back(new edge(rows->at(i),columns->at(i),weights->at(i)));
 
 		//Sort the elements first by row, then by column
-		std::sort(combined.begin(),combined.end(),comparator());
+		std::sort(combined.begin(),combined.end(),compare());
 
 		//copy back the elements into row and columns
 		for(int i=0;i<rows->size();i++)
 		{
-			rows->at(i) = combined[i].first;
-			columns->at(i) = combined[i].second;
+			rows->at(i) = combined[i]->row;
+			columns->at(i) = combined[i]->col;
+			weights->at(i) = combined[i]->weight;
+
+			assert(rows->at(i) != columns->at(i));
 		}
+
+		for(int i=0;i<rows->size();i++)
+			delete combined[i];
 
 		combined.clear();
 
@@ -182,45 +198,6 @@ public:
 
 		return edge_weight;
 	}
-
-	csr_graph *get_modified_graph(std::vector<unsigned> *remove_edge_list,
-		std::vector<std::vector<unsigned> > *edges_new_list,
-		int nodes_removed)
-	{
-		std::vector<bool> filter_edges(rows->size());
-		for(int i=0;i<filter_edges.size();i++)
-			filter_edges[i] = false;
-
-		for(int i=0;i<remove_edge_list->size();i++)
-			filter_edges[remove_edge_list->at(i)] = true;
-
-		csr_graph *new_reduced_graph = new csr_graph();
-
-		new_reduced_graph->Nodes = Nodes - nodes_removed;
-
-		//add new edges first.
-		for(int i=0;i<edges_new_list->size();i++)
-		{
-			new_reduced_graph->insert(edges_new_list->at(i)[0],
-						  edges_new_list->at(i)[1],
-						  edges_new_list->at(i)[2],
-						  false);
-		}
-
-		for(int i=0;i<rows->size();i++)
-		{
-			if(!filter_edges.at(i))
-				new_reduced_graph->insert(rows->at(i),columns->at(i),weights->at(i),true);
-		}
-
-		new_reduced_graph->calculateDegreeandRowOffset();
-
-		filter_edges.clear();
-
-		return new_reduced_graph;
-	}
-
-
 };
 
 #endif
