@@ -27,11 +27,14 @@ struct bicc_graph
 
 	std::vector<int> bicc_number;
 
+	std::vector<bool> is_articulation_point;
+
 	bicc_graph(int _Nodes)
 	{
 		Nodes = _Nodes;
 		Edges = 0;
 		c_graph = new csr_graph();
+		is_articulation_point.resize(Nodes,false);
 	}
 
 	~bicc_graph()
@@ -278,6 +281,7 @@ struct bicc_graph
 				std::string outputfilePath = outputDirName + std::to_string(file_output_count) + ".mtx";
 
 				//debug(outputfilePath);
+				std::unordered_set<int> articulation_points;
 
 				FileWriter fout(outputfilePath.c_str(),global_nodes_count,it->second.size());
 
@@ -291,7 +295,25 @@ struct bicc_graph
 					int weight = c_graph->weights->at(edge_index);
 
 					fout.write_edge(src_vtx,dest_vtx,weight);
+
+					if(is_articulation_point[src_vtx])
+						articulation_points.insert(src_vtx);
+
+					if(is_articulation_point[dest_vtx])
+						articulation_points.insert(dest_vtx);
 				}
+
+				FILE *file_ref = fout.get_file();
+
+				// write the info about Articulation Points here...
+				fprintf(file_ref, "%d\n", articulation_points.size());
+
+				for(std::unordered_set<int>::iterator ij = articulation_points.begin();
+					ij != articulation_points.end(); ij++)
+				{
+					fprintf(file_ref, "%d\n", (*ij) + 1);
+				}
+
 
 				fout.fileClose();
 

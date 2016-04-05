@@ -82,7 +82,24 @@ int main(int argc,char* argv[])
 		edge_lists[i].push_back(v1);
 		edge_lists[i].push_back(v2);
 		edge_lists[i].push_back(weight);
+
 	}
+	std::vector<int> ArticulationPoints;
+
+	FILE *input_file = Reader.get_file();
+
+	int count_ap = 0,curr_ap;
+
+	fscanf(input_file,"%d",&count_ap);
+
+	//push to Articulation Points
+	for(int i=0;i<count_ap;i++)
+	{
+		fscanf(input_file,"%d",&curr_ap);
+		ArticulationPoints.push_back(curr_ap - 1);
+	}
+
+	Reader.fileClose();
 
 	FileWriter fout(OutputFileName.c_str(),forward_order.size(),edges);
 
@@ -94,14 +111,20 @@ int main(int argc,char* argv[])
 
 	FILE *file = fout.get_file();
 
-	fprintf(file, "%d\n",0);
+	fprintf(file, "%d\n",count_ap);
+	for(int i=0;i<count_ap;i++)
+		fprintf(file, "%d\n",forward_order[ArticulationPoints[i]] + 1);
+
+	fprintf(file, "%d\n",-1);
 	fprintf(file, "%d\n",nodes);
 	fprintf(file, "%d\n",forward_order.size());
+
+	ArticulationPoints.clear();
 
 	for(std::unordered_map<unsigned,unsigned>::iterator it = forward_order.begin(); it!=forward_order.end();
 		it++)
 	{
-		fprintf(file,"%d %d\n",it->second,it->first);
+		fprintf(file,"%u %u\n",it->first + 1,it->second + 1);
 	}
 
 	fout.fileClose();

@@ -74,6 +74,11 @@ public:
     	// }
 	}
 
+	FILE *get_file()
+	{
+		return InputFileName;
+	}
+
 	void fileClose()
 	{
 		fclose(InputFileName);

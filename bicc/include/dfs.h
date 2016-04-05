@@ -174,6 +174,7 @@ struct DFS
     			 	 	(helper->low[_edge_dest] >= helper->discovery[_edge_src]) ) )
     			 	{
     			 		////debug("Articulation Point Detected: src:",_edge_src + 1);
+    			 		graph->is_articulation_point[_edge_src] = true;
 
 					if(bicc_edges->empty())
 						return;
@@ -244,6 +245,9 @@ struct DFS
 								std::make_pair(bcc_no,edges_per_component));
 						}
 
+						graph->is_articulation_point[src_vtx] = true;
+						graph->is_articulation_point[dest_vtx] = true;
+
 						////debug("Identified Bridge");
 					}
     			 	}
@@ -290,6 +294,9 @@ int dfs_bicc_initializer(unsigned src,int bicc_number,int &new_bicc_number,bicc_
 
 	std::list<int> *edges_per_component = new std::list<int>();
 
+	unsigned src_vtx = -1;
+	unsigned dest_vtx = -1;
+
 	while( !bicc_edges->empty() )
 	{
 		j = 1;
@@ -298,8 +305,8 @@ int dfs_bicc_initializer(unsigned src,int bicc_number,int &new_bicc_number,bicc_
 
 		bicc_edges->pop_back();
 
-		unsigned src_vtx = graph->c_graph->rows->at(edge_index);
-		unsigned dest_vtx = graph->c_graph->columns->at(edge_index);
+		src_vtx = graph->c_graph->rows->at(edge_index);
+		dest_vtx = graph->c_graph->columns->at(edge_index);
 
 		////debug("Removed Edge,src:",src_vtx+1,",dest:",dest_vtx+1);
 
@@ -329,6 +336,12 @@ int dfs_bicc_initializer(unsigned src,int bicc_number,int &new_bicc_number,bicc_
 			dfs_worker->store_biconnected_edges.push_back(
 				std::make_pair(bcc_no,edges_per_component));
 		}
+
+		assert(src_vtx != -1);
+		assert(dest_vtx != -1);
+
+		dfs_worker->graph->is_articulation_point[src_vtx] = true;
+		dfs_worker->graph->is_articulation_point[dest_vtx] = true;
 
 		////debug("Identified Bridge");
 	}
