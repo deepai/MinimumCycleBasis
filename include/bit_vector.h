@@ -44,6 +44,13 @@ public:
 
 		item = item^xor_number;
 	}
+
+	void do_xor(bit_vector *vector)
+	{
+		assert(vector->size == size);
+		for(int i=0;i<size;i++)
+			elements[i] = elements[i]^vector->elements[i];
+	}
 };
 
 #endif
