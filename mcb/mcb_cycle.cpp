@@ -21,6 +21,7 @@
 #include "CsrGraph.h"
 #include "CsrTree.h"
 #include "CsrGraphMulti.h"
+#include "bit_vector.h"
 
 debugger dbg;
 HostTimer globalTimer;
@@ -119,6 +120,16 @@ int main(int argc,char* argv[])
 
 	csr_tree *initial_spanning_tree = new csr_tree(reduced_graph);
 	initial_spanning_tree->populate_tree_edges(true,souce_vertex);
+
+	int num_non_tree_edges = initial_spanning_tree->non_tree_edges->size();
+
+	//generate the bit vectors
+	bit_vector **support_vectors = new bit_vector*[num_non_tree_edges];
+	for(int i=0;i<num_non_tree_edges;i++)
+	{
+		*support_vectors = new bit_vector(num_non_tree_edges);
+		(*support_vectors)->set_bit(i,true);
+	}
 
 	return 0;
 }
