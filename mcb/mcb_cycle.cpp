@@ -117,5 +117,8 @@ int main(int argc,char* argv[])
 									     edges_new_list,
 									     nodes_removed);
 
+	csr_tree *initial_spanning_tree = new csr_tree(reduced_graph);
+	initial_spanning_tree->populate_tree_edges(true,souce_vertex);
+
 	return 0;
 }

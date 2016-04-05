@@ -20,7 +20,7 @@ LIBS=-lm
 _DEPS = *.h 
 DEPS = $(patsubst %,$(EX_INCLUDE)/%,$(_DEPS))
 
-_EXTRA_DEPS = mmio.o Host_Timer.o CsrGraphSpanningTree.o CsrGraphDegreeTwoRemoval.o
+_EXTRA_DEPS = mmio.o Host_Timer.o CsrGraphSpanningTree.o CsrGraphDegreeTwoRemoval.o CsrGraphMultiSpanningTree.o
 EXTRA_DEPS = $(patsubst %,$(EX_INCLUDE)/%,$(_EXTRA_DEPS))
 
 OBJ = mcb_cycle.o
