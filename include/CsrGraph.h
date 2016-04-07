@@ -198,6 +198,18 @@ public:
 
 		return edge_weight;
 	}
+
+	void print_graph()
+	{
+		printf("=================================================================================\n");
+		printf("Number of nodes = %d,edges = %d\n",Nodes,rows->size()/2);
+		for(int i=0;i<rows->size();i++)
+		{
+			if(rows->at(i) < columns->at(i))
+				printf("%u %u\n",rows->at(i)+1,columns->at(i)+1);
+		}
+		printf("=================================================================================\n");
+	}
 };
 
 #endif

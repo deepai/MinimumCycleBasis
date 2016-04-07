@@ -22,6 +22,7 @@
 #include "CsrTree.h"
 #include "CsrGraphMulti.h"
 #include "bit_vector.h"
+#include "work_per_thread.h"
 
 debugger dbg;
 HostTimer globalTimer;
@@ -86,10 +87,10 @@ int main(int argc,char* argv[])
 	debug("Input File Reading Complete...\n");
 	debug("Generating Initial Spanning Tree and Ear Decomposition");
 
-	int souce_vertex;
+	int source_vertex;
 
-	std::vector<unsigned> *remove_edge_list = graph->mark_degree_two_chains(&chains,souce_vertex);
-	//initial_spanning_tree.populate_tree_edges(true,NULL,souce_vertex);
+	std::vector<unsigned> *remove_edge_list = graph->mark_degree_two_chains(&chains,source_vertex);
+	//initial_spanning_tree.populate_tree_edges(true,NULL,source_vertex);
 
 	std::vector<std::vector<unsigned> > *edges_new_list = new std::vector<std::vector<unsigned> >();
 
@@ -119,9 +120,58 @@ int main(int argc,char* argv[])
 									     nodes_removed);
 
 	csr_tree *initial_spanning_tree = new csr_tree(reduced_graph);
-	initial_spanning_tree->populate_tree_edges(true,souce_vertex);
+	initial_spanning_tree->populate_tree_edges(true,source_vertex);
 
 	int num_non_tree_edges = initial_spanning_tree->non_tree_edges->size();
+
+	worker_thread **multi_work = new worker_thread*[num_threads];
+	for(int i=0;i<num_threads;i++)
+		multi_work[i] = new worker_thread(reduced_graph);
+
+	//produce shortest path trees across all the nodes.
+	#pragma omp parallel for 
+	for(int i = 0; i < reduced_graph->Nodes; ++i)
+	{
+		int threadId = omp_get_thread_num();
+		multi_work[threadId]->produce_sp_tree_and_cycles(i,reduced_graph);
+	}
+
+	std::vector<cycle*> list_cycle;
+
+	//block
+	{
+		int space[num_threads] = {0};
+		for(int i=0;i<num_threads;i++)
+			space[i] = multi_work[i]->list_cycles.size();
+
+		int prev = 0;
+		for(int i=0;i<num_threads;i++)
+		{
+			int temp = space[i];
+			space[i] = prev;
+			prev += temp;
+		}
+
+		//total number of cycles;
+		list_cycle.resize(prev);
+
+		#pragma omp parallel for
+		for(int i=0;i<num_threads;i++)
+		{
+			int threadId = omp_get_thread_num();
+			for(int j=0;j<multi_work[i]->list_cycles.size();j++)
+				list_cycle[space[i] + j] = multi_work[i]->list_cycles[j];
+
+			multi_work[i]->empty_cycles();
+
+		}
+
+	}
+
+	std::sort(list_cycle.begin(),list_cycle.end(),cycle::compare());
+
+	//At this stage we have the shortest path trees and the cycles sorted in increasing order of length.
+
 
 	//generate the bit vectors
 	bit_vector **support_vectors = new bit_vector*[num_non_tree_edges];
