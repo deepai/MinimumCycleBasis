@@ -41,6 +41,7 @@ struct worker_thread
 			if(is_edge_cycle)
 			{
 				cycle *cle = new cycle(sp_tree,non_tree_edges->at(i));
+				cle->total_length = total_weight;
 				list_cycles.push_back(cle);
 			}
 		}
