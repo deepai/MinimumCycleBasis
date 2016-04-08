@@ -206,7 +206,7 @@ public:
 		for(int i=0;i<rows->size();i++)
 		{
 			if(rows->at(i) < columns->at(i))
-				printf("%u %u\n",rows->at(i)+1,columns->at(i)+1);
+				printf("%u %u - %u\n",rows->at(i)+1,columns->at(i)+1,weights->at(i));
 		}
 		printf("=================================================================================\n");
 	}
