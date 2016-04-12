@@ -61,14 +61,9 @@ struct worker_thread
 
 	void precompute_supportVec(std::unordered_map<unsigned,unsigned> &non_tree_edge_map,bit_vector &vector)
 	{
-		bool flag = false;
-
 		for(int i=0;i<shortest_path_trees.size();i++)
 		{
 			csr_tree *current_tree = shortest_path_trees.at(i);
-			
-			if(current_tree->root == 4)
-				flag = true;
 
 			std::vector<unsigned> *tree_edges = current_tree->tree_edges;
 			std::vector<unsigned> *precompute_nodes = current_tree->node_pre_compute;
@@ -99,9 +94,6 @@ struct worker_thread
 				else //tree edge
 					precompute_nodes->at(column) = precompute_nodes->at(row);
 			}
-
-			flag = false;
-
 		}
 	}
 };
