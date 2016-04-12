@@ -15,6 +15,19 @@ public:
 	std::vector<unsigned> *node_pre_compute;
 	std::vector<int> *parent_edges;
 
+	struct compare
+	{
+		csr_multi_graph *parent_graph;
+		compare(csr_multi_graph *graph)
+		{
+			parent_graph = graph;
+		}
+		bool operator()(const unsigned &A,const unsigned &B) const
+		{
+			return (parent_graph->weights->at(A) < parent_graph->weights->at(B));
+		}
+	};
+
 	csr_tree(csr_multi_graph *graph)
 	{
 		parent_graph = graph;
@@ -45,6 +58,8 @@ public:
 		non_tree_edges->clear();
 
 		non_tree_edges = reduced_non_tree_edge;
+
+		std::sort(non_tree_edges->begin(),non_tree_edges->end(),compare(parent_graph));
 	}
 
 	void obtain_shortest_path_tree(dijkstra &helper,bool populate_non_tree_edges,int src)
