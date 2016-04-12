@@ -35,6 +35,14 @@ struct cycle
 		return tree->root;
 	}
 
+	/**
+	 * @brief This method returns a bit_vector corresponding to the edges of the cycle.
+	 * @details The cycles are represented using bit_vectors of non_tree edges. Non_tree edges present in 
+	 * the cycles are marked set in the bit_vectors at their corresponding positions.
+	 * 
+	 * @param non_tree_edges map of non_tree edges and its position from 0 - non_tree_edges.size() - 1
+ 	 * @return bit_vector describing the cycle.
+	 */
 	bit_vector *get_cycle_vector(std::unordered_map<unsigned,unsigned> &non_tree_edges)
 	{
 		int num_elements = non_tree_edges.size();
@@ -89,8 +97,6 @@ struct cycle
 			else
 				col = tree->parent_graph->columns->at(edge_offset);
 		}
-
-
 		return vector;
 	}
 
