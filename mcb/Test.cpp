@@ -223,6 +223,8 @@ int main(int argc,char* argv[])
 	//Main Outer Loop of the Algorithm.
 	for(int e=0;e<num_non_tree_edges;e++)
 	{
+		debug("Si is as follows.",e);
+		support_vectors[e]->print();
 		#pragma omp parallel for
 		for(int i=0;i<num_threads;i++)
 		{
@@ -263,6 +265,8 @@ int main(int argc,char* argv[])
 
 		bit_vector *cycle_vector = final_mcb.back()->get_cycle_vector(*non_tree_edges_map);
 		final_mcb.back()->print();
+
+		printf("Ci ");
 		cycle_vector->print();
 
 		#pragma omp parallel for 
@@ -271,6 +275,8 @@ int main(int argc,char* argv[])
 			unsigned product = cycle_vector->dot_product(support_vectors[j]);
 			if(product == 1)
 				support_vectors[j]->do_xor(support_vectors[e]);
+			printf("%d ",product);
+			support_vectors[j]->print();
 		}
 	}
 
