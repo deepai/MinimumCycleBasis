@@ -44,4 +44,4 @@ Test.o: Test.cpp $(DEPS)
 .PHONY: clean
 
 clean:
-	rm -f $(ODIR)/*.o *~ core $(INCDIR)/*~  *.o ../include/*.o mcb_cycle
+	rm -f $(ODIR)/*.o *~ core $(INCDIR)/*~  *.o ../include/*.o mcb_cycle Test

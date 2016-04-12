@@ -12,7 +12,9 @@
 #include <algorithm>
 #include <atomic>
 #include <list>
+#include <cstring>
 #include <unordered_set>
+#include <unordered_map>
 
 #include "FileReader.h"
 #include "Files.h"
@@ -124,6 +126,11 @@ int main(int argc,char* argv[])
 
 	int num_non_tree_edges = initial_spanning_tree->non_tree_edges->size();
 
+	std::unordered_map<unsigned,unsigned> *non_tree_edges_map = new std::unordered_map<unsigned,unsigned>();
+	
+	for(int i=0;i<initial_spanning_tree->non_tree_edges->size();i++)
+		non_tree_edges_map->insert(std::make_pair(initial_spanning_tree->non_tree_edges->at(i),i));
+
 	worker_thread **multi_work = new worker_thread*[num_threads];
 	for(int i=0;i<num_threads;i++)
 		multi_work[i] = new worker_thread(reduced_graph);
@@ -177,8 +184,72 @@ int main(int argc,char* argv[])
 	bit_vector **support_vectors = new bit_vector*[num_non_tree_edges];
 	for(int i=0;i<num_non_tree_edges;i++)
 	{
-		*support_vectors = new bit_vector(num_non_tree_edges);
-		(*support_vectors)->set_bit(i,true);
+		support_vectors[i] = new bit_vector(num_non_tree_edges);
+		support_vectors[i]->set_bit(i,true);
+	}
+
+	std::vector<cycle*> final_mcb;
+
+	bool *used_cycle = new bool[list_cycle.size()];
+	memset(used_cycle,0,sizeof(bool)*list_cycle.size());
+
+	//Main Outer Loop of the Algorithm.
+	for(int e=0;e<num_non_tree_edges;e++)
+	{
+		#pragma omp parallel for
+		for(int i=0;i<num_threads;i++)
+		{
+			multi_work[i]->precompute_supportVec(*non_tree_edges_map,*support_vectors[e]);
+		}
+		for(int i=0;i<list_cycle.size();i++)
+		{
+			if(used_cycle[i] == true)
+				continue;
+			
+			unsigned normal_edge = list_cycle[i]->non_tree_edge_index;
+			unsigned reverse_edge = reduced_graph->reverse_edge->at(normal_edge);
+			unsigned bit_val = 0;
+
+			unsigned row,col;
+			row = reduced_graph->rows->at(normal_edge);
+			col = reduced_graph->columns->at(normal_edge);
+
+			if(non_tree_edges_map->find(reverse_edge) != non_tree_edges_map->end())
+			{
+				bit_val = support_vectors[e]->get_bit(non_tree_edges_map->at(reverse_edge));
+			}
+			else if(non_tree_edges_map->find(normal_edge) != non_tree_edges_map->end())
+			{
+				bit_val = support_vectors[e]->get_bit(non_tree_edges_map->at(normal_edge));
+			}
+
+			bit_val = (bit_val + list_cycle[i]->tree->node_pre_compute->at(row))%2;
+			bit_val = (bit_val + list_cycle[i]->tree->node_pre_compute->at(col))%2;
+
+			if(bit_val == 1)
+			{
+
+				final_mcb.push_back(list_cycle[i]);
+				used_cycle[i] = true;
+				break;
+			}
+		}
+
+		bit_vector *cycle_vector = final_mcb.back()->get_cycle_vector(*non_tree_edges_map);
+
+		#pragma omp parallel for 
+		for(int j=e+1;j<num_non_tree_edges;j++)
+		{
+			unsigned product = cycle_vector->dot_product(support_vectors[j]);
+			if(product == 1)
+				support_vectors[j]->do_xor(support_vectors[e]);
+		}
+
+	}
+
+	for(int i=0;i<final_mcb.size();i++)
+	{
+		final_mcb[i]->print();
 	}
 
 	return 0;
