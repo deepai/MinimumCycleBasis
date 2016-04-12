@@ -13,6 +13,7 @@ public:
 	std::vector<unsigned> *tree_edges;
 	std::vector<unsigned> *non_tree_edges = NULL;
 	std::vector<unsigned> *node_pre_compute;
+	std::vector<int> *parent_edges;
 
 	csr_tree(csr_multi_graph *graph)
 	{
@@ -56,7 +57,11 @@ public:
 		helper.dijkstra_sp(src);
 		helper.compute_non_tree_edges(&non_tree_edges);
 
-		tree_edges = helper.tree_edges;
+		tree_edges = helper.tree_edges;		
+		parent_edges = new std::vector<int>();
+
+		for(int i=0;i< helper.edge_offsets.size();i++)
+		 	parent_edges->push_back(helper.edge_offsets[i]);
 	}
 
 	void remove_non_tree_edges()
@@ -97,13 +102,17 @@ public:
 		printf("=================================================================================\n");
 		printf("Printing Spanning Tree Edges,count = %d\n",tree_edges->size());
 		for(int i=0;i<tree_edges->size();i++)
-			printf("%u %u\n",parent_graph->rows->at(tree_edges->at(i)) + 1,
-					 parent_graph->columns->at(tree_edges->at(i)) + 1);
+			printf("%u %u %d\n",parent_graph->rows->at(tree_edges->at(i)) + 1,
+					 parent_graph->columns->at(tree_edges->at(i)) + 1,
+					 parent_graph->weights->at(tree_edges->at(i)));
 		printf("=================================================================================\n");
 	}
 
 	void print_non_tree_edges()
 	{
+		if(non_tree_edges == NULL)
+			return;
+
 		printf("=================================================================================\n");
 		printf("Printing Non-Tree Edges,count = %d\n",non_tree_edges->size());
 		for(int i=0;i<non_tree_edges->size();i++)
