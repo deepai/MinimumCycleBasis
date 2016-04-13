@@ -33,6 +33,7 @@ std::string InputFileName;
 std::string OutputFileDirectory;
 
 double totalTime = 0;
+double localTime = 0;
 
 int main(int argc,char* argv[])
 {
@@ -105,6 +106,8 @@ int main(int argc,char* argv[])
 	for(int i=0;i<num_threads;i++)
 		multi_work[i] = new worker_thread(reduced_graph);
 
+	globalTimer.start_timer();
+
 	//produce shortest path trees across all the nodes.
 	#pragma omp parallel for 
 	for(int i = 0; i < reduced_graph->Nodes; ++i)
@@ -113,8 +116,14 @@ int main(int argc,char* argv[])
 		multi_work[threadId]->produce_sp_tree_and_cycles(i,reduced_graph);
 	}
 
+	localTime = globalTimer.get_event_time();
+	totalTime += localTime;
+
+	debug("Time to construct the trees =",localTime);
+
 	std::vector<cycle*> list_cycle;
 
+	globalTimer.start_timer();
 	//block
 	{
 		int space[num_threads] = {0};
@@ -145,10 +154,21 @@ int main(int argc,char* argv[])
 
 	}
 
+	localTime = globalTimer.get_event_time();
+	totalTime += localTime;
+
+	debug("Time to collect the circles =",localTime);
+
+	globalTimer.start_timer();
+
 	std::sort(list_cycle.begin(),list_cycle.end(),cycle::compare());
 
-	//At this stage we have the shortest path trees and the cycles sorted in increasing order of length.
+	localTime = globalTimer.get_event_time();
+	totalTime += localTime;
 
+	debug("Time to sort the circles =",localTime);
+
+	//At this stage we have the shortest path trees and the cycles sorted in increasing order of length.
 
 	//generate the bit vectors
 	bit_vector **support_vectors = new bit_vector*[num_non_tree_edges];
@@ -162,6 +182,8 @@ int main(int argc,char* argv[])
 
 	bool *used_cycle = new bool[list_cycle.size()];
 	memset(used_cycle,0,sizeof(bool)*list_cycle.size());
+
+	globalTimer.start_timer();
 
 	//Main Outer Loop of the Algorithm.
 	for(int e=0;e<num_non_tree_edges;e++)
@@ -216,6 +238,11 @@ int main(int argc,char* argv[])
 		}
 
 	}
+
+	localTime = globalTimer.get_event_time();
+	totalTime += localTime;
+
+	debug("Time for the main loop of the algorithm. =",localTime);
 
 	for(int i=0;i<final_mcb.size();i++)
 	{
