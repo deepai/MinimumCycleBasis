@@ -275,10 +275,15 @@ int main(int argc,char* argv[])
 
 	debug("Time for the main loop of the algorithm. =",localTime);
 
+	int total_weight = 0;
+
 	for(int i=0;i<final_mcb.size();i++)
 	{
-		final_mcb[i]->print();
+		total_weight +=  final_mcb[i]->total_length;
 	}
+
+	debug("Number of Cycles =",final_mcb.size());
+	debug("Total Weight = ",total_weight);
 
 	return 0;
 }
