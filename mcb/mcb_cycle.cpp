@@ -167,6 +167,7 @@ int main(int argc,char* argv[])
 	totalTime += localTime;
 
 	debug("Time to sort the circles =",localTime);
+	debug("Total number of cycles =",list_cycle.size());
 
 	//At this stage we have the shortest path trees and the cycles sorted in increasing order of length.
 
