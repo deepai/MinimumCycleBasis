@@ -2,6 +2,7 @@
 #define __CSR_MULTI_GRAPH
 
 #include "CsrGraph.h"
+#include <unordered_map>
 
 class csr_multi_graph : public csr_graph{
 
@@ -11,15 +12,19 @@ protected:
 		unsigned row;
 		unsigned col;
 		int weight;
+		int chain_index;
 
 		struct edge *reverse_edge_ptr;
+		int original_edge_index;
 		int reverse_edge_index;
 
-		edge(unsigned &r,unsigned &c,int &w)
+		edge(unsigned &r,unsigned &c,int &w,int &ch_index,int &orig_index)
 		{
 			row = r;
 			col = c;
 			weight = w;
+			chain_index = ch_index;
+			original_edge_index = orig_index;
 		}
 	};
 
@@ -33,16 +38,22 @@ protected:
 	};
 public:
 	std::vector<unsigned> *reverse_edge;
+	std::vector<int> *chains;
+	std::vector<int> *edge_original_graph;
 	csr_multi_graph()
 	{
 		reverse_edge = new std::vector<unsigned>();
+		chains = new std::vector<int>();
+		edge_original_graph = new std::vector<int>();
 	}
 
-	void insert(int a,int b,int wt,bool direction)
+	void insert(int a,int b,int wt,int chain_index,int edge_index,bool direction)
 	{
 		columns->push_back(b);
 		rows->push_back(a);
 		weights->push_back(wt);
+		chains->push_back(chain_index);
+		edge_original_graph->push_back(edge_index);
 
 		if(!direction)
 			reverse_edge->push_back(rows->size());
@@ -50,7 +61,7 @@ public:
 			reverse_edge->push_back(rows->size()-2);
 
 		if(!direction)
-			insert(b,a,wt,true);
+			insert(b,a,wt,chain_index,edge_index,true);
 	}
 	//Calculate the degree of the vertices and create the rowOffset
 	void calculateDegreeandRowOffset()
@@ -71,7 +82,8 @@ public:
 		
 		//copy the elements from the row and column array
 		for(int i=0;i<rows->size();i++)
-			combined.push_back(new edge(rows->at(i),columns->at(i),weights->at(i)));
+			combined.push_back(new edge(rows->at(i),columns->at(i),weights->at(i),chains->at(i),
+				edge_original_graph->at(i)));
 
 		//assing the reverse_edge_pointers to the correct edge pointers.
 		for(int i=0;i<rows->size();i++)
@@ -89,6 +101,8 @@ public:
 			rows->at(i) = combined[i]->row;
 			columns->at(i) = combined[i]->col;
 			weights->at(i) = combined[i]->weight;
+			chains->at(i) = combined[i]->chain_index;
+			edge_original_graph->at(i)  = combined[i]->original_edge_index;
 
 			assert(combined[i]->reverse_edge_index < rows->size());
 
@@ -149,28 +163,50 @@ public:
 
 		csr_multi_graph *new_reduced_graph = new csr_multi_graph();
 
-		new_reduced_graph->Nodes = graph->Nodes - nodes_removed;
+		std::unordered_map<unsigned,unsigned> *new_nodes = new std::unordered_map<unsigned,unsigned>();
 
+		int new_node_count = 0;
+		//This is for Relabelling vertices.
+		for(int i=0;i<graph->rows->size();i++)
+		{
+			if(!filter_edges.at(i))
+			{
+				if(new_nodes->find(graph->rows->at(i)) == new_nodes->end())
+					new_nodes->insert(std::make_pair(graph->rows->at(i),new_node_count++));
+				if(new_nodes->find(graph->columns->at(i)) == new_nodes->end())
+					new_nodes->insert(std::make_pair(graph->columns->at(i),new_node_count++));
+			}
+		}
+
+		new_reduced_graph->Nodes = new_node_count;
+
+		//We have the relabel information now and can easily fill the edges.
 		//add new edges first.
 		for(int i=0;i<edges_new_list->size();i++)
 		{
-			new_reduced_graph->insert(edges_new_list->at(i)[0],
-						  edges_new_list->at(i)[1],
+			new_reduced_graph->insert(new_nodes->at(edges_new_list->at(i)[0]),
+						  new_nodes->at(edges_new_list->at(i)[1]),
 						  edges_new_list->at(i)[2],
+						  i,
+						  -1,
 						  false);
 		}
-
+		//add the old edges
 		for(int i=0;i<graph->rows->size();i++)
 		{
 			if(!filter_edges.at(i))
 			{
 				if(graph->rows->at(i) < graph->columns->at(i))
-					new_reduced_graph->insert(graph->rows->at(i),
-								  graph->columns->at(i),
+					new_reduced_graph->insert(new_nodes->at(graph->rows->at(i)),
+								  new_nodes->at(graph->columns->at(i)),
 								  graph->weights->at(i),
+								  -1,
+								  i,
 								  false);
 			}
 		}
+
+		new_nodes->clear();
 
 		new_reduced_graph->calculateDegreeandRowOffset();
 
