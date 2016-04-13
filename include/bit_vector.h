@@ -2,6 +2,7 @@
 #define _H_BIT_VECTOR
 
 #include <stack>
+#include <omp.h>
 
 class bit_vector
 {
@@ -90,6 +91,8 @@ public:
 	void do_xor(bit_vector *vector)
 	{
 		assert(vector->size == size);
+
+		#pragma omp parallel for
 		for(int i=0;i<size;i++)
 			elements[i] = elements[i]^vector->elements[i];
 	}
