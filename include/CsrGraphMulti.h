@@ -47,6 +47,13 @@ public:
 		edge_original_graph = new std::vector<int>();
 	}
 
+	~csr_multi_graph()
+	{
+		reverse_edge->clear();
+		chains->clear();
+		edge_original_graph->clear();
+	}
+
 	void insert(int a,int b,int wt,int chain_index,int edge_index,bool direction)
 	{
 		columns->push_back(b);
@@ -178,7 +185,17 @@ public:
 			}
 		}
 
+		for(int i=0;i<edges_new_list->size();i++)
+		{
+			if(new_nodes->find(edges_new_list->at(i)[0]) == new_nodes->end())
+				new_nodes->insert(std::make_pair(edges_new_list->at(i)[0],new_node_count++));
+			if(new_nodes->find(edges_new_list->at(i)[1]) == new_nodes->end())
+				new_nodes->insert(std::make_pair(edges_new_list->at(i)[1],new_node_count++));
+		}
+
 		new_reduced_graph->Nodes = new_node_count;
+
+		debug(new_node_count);
 
 		//We have the relabel information now and can easily fill the edges.
 		//add new edges first.
