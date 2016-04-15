@@ -23,6 +23,11 @@ public:
 			elements[i] = 0;
 	}
 
+	~bit_vector()
+	{
+		delete[] elements;
+	}
+
 	inline unsigned long long get_or_number(int &offset,bool &val)
 	{
 		unsigned long long initial_value = val;

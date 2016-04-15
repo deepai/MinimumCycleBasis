@@ -133,6 +133,7 @@ int main(int argc,char* argv[])
 		non_tree_edges_map->insert(std::make_pair(initial_spanning_tree->non_tree_edges->at(i),i));
 
 	worker_thread **multi_work = new worker_thread*[num_threads];
+
 	for(int i=0;i<num_threads;i++)
 		multi_work[i] = new worker_thread(reduced_graph);
 
@@ -216,6 +217,8 @@ int main(int argc,char* argv[])
 
 	globalTimer.start_timer();
 
+	debug("num_non_tree_edges",num_non_tree_edges);
+
 	//Main Outer Loop of the Algorithm.
 	for(int e=0;e<num_non_tree_edges;e++)
 	{
@@ -260,7 +263,6 @@ int main(int argc,char* argv[])
 
 		bit_vector *cycle_vector = final_mcb.back()->get_cycle_vector(*non_tree_edges_map);
 
-		#pragma omp parallel for 
 		for(int j=e+1;j<num_non_tree_edges;j++)
 		{
 			unsigned product = cycle_vector->dot_product(support_vectors[j]);
@@ -288,12 +290,22 @@ int main(int argc,char* argv[])
 	//clear the memory
 	delete graph;
 	delete reduced_graph;
+	delete[] used_cycle;
 
 	chains->clear();
 	remove_edge_list->clear();
 	edges_new_list->clear();
 
+	for(int i=0;i<num_threads;i++)
+		delete multi_work[i];
+
 	delete[] multi_work;
+
+	for(int i=0;i<num_non_tree_edges;i++)
+		delete support_vectors[i];
+
+	delete[] support_vectors;
+
 	list_cycle.clear();
 	final_mcb.clear();
 

@@ -45,6 +45,7 @@ struct dijkstra
 		in_tree.clear();
 		parent.clear();
 		level.clear();
+		edge_offsets.clear();
 	}
 
 
