@@ -285,5 +285,17 @@ int main(int argc,char* argv[])
 	debug("Number of Cycles =",final_mcb.size());
 	debug("Total Weight = ",total_weight);
 
+	//clear the memory
+	delete graph;
+	delete reduced_graph;
+
+	chains->clear();
+	remove_edge_list->clear();
+	edges_new_list->clear();
+
+	delete[] multi_work;
+	list_cycle.clear();
+	final_mcb.clear();
+
 	return 0;
 }

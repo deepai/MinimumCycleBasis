@@ -21,6 +21,13 @@ struct worker_thread
 		helper = new dijkstra(graph->Nodes,graph);
 	}
 
+	~worker_thread()
+	{
+		shortest_path_trees.clear();
+		list_cycles.clear();
+		delete helper;
+	}
+
 
 	void produce_sp_tree_and_cycles(int src,csr_multi_graph *graph)
 	{
