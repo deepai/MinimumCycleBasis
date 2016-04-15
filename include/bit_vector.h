@@ -23,7 +23,7 @@ public:
 			elements[i] = 0;
 	}
 
-	inline unsigned long long get_xor_number(int &offset,bool &val)
+	inline unsigned long long get_or_number(int &offset,bool &val)
 	{
 		unsigned long long initial_value = val;
 		if(val == false)
@@ -83,9 +83,9 @@ public:
 		unsigned long long &item = get_element_for_pos(pos);
 		int offset = pos%64;
 
-		unsigned long long xor_number = get_xor_number(offset,val);
+		unsigned long long or_number = get_or_number(offset,val);
 
-		item = item^xor_number;
+		item = item | or_number;
 	}
 
 	void do_xor(bit_vector *vector)
