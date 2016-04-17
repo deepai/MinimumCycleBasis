@@ -5,10 +5,10 @@ subsystem:
 	cd mcb && $(MAKE)
 
 clean:
-	rm bicc/Relabeller
-	rm bicc/*.o
-	rm bicc/bicc_decomposition
-	rm mcb/*.o
-	rm mcb/mcb_cycle
-	rm mcb/Test
-	rm include/*.o
+	rm bicc/Relabeller -f
+	rm bicc/*.o -f
+	rm bicc/bicc_decomposition -f 
+	rm mcb/*.o -f 
+	rm mcb/mcb_cycle -f
+	rm mcb/Test -f 
+	rm include/*.o -f
