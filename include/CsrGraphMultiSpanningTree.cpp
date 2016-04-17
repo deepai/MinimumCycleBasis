@@ -90,17 +90,26 @@ std::vector<unsigned> *csr_multi_graph::get_spanning_tree(std::vector<unsigned> 
 						int reverse_index = reverse_edge_internal->at(offset);
 						if(is_tree_edge->at(reverse_index) == 1)
 							continue;
-						else if(is_tree_edge->at(reverse_index) == 0)
+						else if(is_tree_edge->at(offset) == 0)
 						{
-
 							(*non_tree_edges_internal)->push_back(offset);
-							is_tree_edge->at(reverse_index) == 2;
+							is_tree_edge->at(offset) = 2;
+							is_tree_edge->at(reverse_index) = 2;
+							continue;
 						}
 						else
 							continue;
 					}
-
-					(*non_tree_edges_internal)->push_back(offset);
+					else if(is_tree_edge->at(offset) == 0)
+					{
+						int reverse_index = reverse_edge_internal->at(offset);
+						(*non_tree_edges_internal)->push_back(offset);
+						is_tree_edge->at(offset) = 2;
+						is_tree_edge->at(reverse_index) = 2;
+						continue;
+					}
+					else
+						continue;
 				}
 			}
 

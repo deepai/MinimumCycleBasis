@@ -6,3 +6,4 @@ mcb/*.o
 mcb/mcb_cycle
 mcb/Test
 *.mtx
+RESULT_MCB/

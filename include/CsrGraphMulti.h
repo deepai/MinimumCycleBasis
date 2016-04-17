@@ -194,9 +194,6 @@ public:
 		}
 
 		new_reduced_graph->Nodes = new_node_count;
-
-		debug(new_node_count);
-
 		//We have the relabel information now and can easily fill the edges.
 		//add new edges first.
 		for(int i=0;(edges_new_list != NULL) && (i<edges_new_list->size());i++)

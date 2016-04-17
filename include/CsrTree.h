@@ -45,20 +45,6 @@ public:
 
 		tree_edges = parent_graph->get_spanning_tree(&non_tree_edges,src);
 
-		std::vector<unsigned> *reduced_non_tree_edge = new std::vector<unsigned>();
-
-		for(int i=0;i<non_tree_edges->size();i++)
-		{
-			unsigned edge_offset = non_tree_edges->at(i);
-
-			if(parent_graph->rows->at(edge_offset) < parent_graph->columns->at(edge_offset))
-				reduced_non_tree_edge->push_back(edge_offset);
-		}
-
-		non_tree_edges->clear();
-
-		non_tree_edges = reduced_non_tree_edge;
-
 		std::sort(non_tree_edges->begin(),non_tree_edges->end(),compare(parent_graph));
 	}
 
