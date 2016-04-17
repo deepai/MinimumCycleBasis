@@ -3,7 +3,7 @@
 
 #include "bit_vector.h"
 #include <unordered_map>
-
+#include <assert.h>
 
 struct cycle
 {
@@ -78,6 +78,8 @@ struct cycle
 				row = tree->parent_graph->rows->at(edge_offset);
 			else
 				row = tree->parent_graph->columns->at(edge_offset);
+
+			assert(row != -1);
 		}
 
 		//check for vertices col =====> root.
@@ -96,6 +98,8 @@ struct cycle
 				col = tree->parent_graph->rows->at(edge_offset);
 			else
 				col = tree->parent_graph->columns->at(edge_offset);
+
+			assert(col != -1);
 		}
 		return vector;
 	}

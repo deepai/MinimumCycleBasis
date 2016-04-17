@@ -8,6 +8,7 @@
 #include "bit_vector.h"
 
 #include <unordered_map>
+#include <assert.h>
 
 
 struct worker_thread
@@ -68,6 +69,9 @@ struct worker_thread
 
 	void precompute_supportVec(std::unordered_map<unsigned,unsigned> &non_tree_edge_map,bit_vector &vector)
 	{
+		assert(non_tree_edge_map.size() == vector.get_num_elements());
+		assert(vector.get_size() == (int)(ceil((double)non_tree_edge_map.size()/64)));
+
 		for(int i=0;i<shortest_path_trees.size();i++)
 		{
 			csr_tree *current_tree = shortest_path_trees.at(i);

@@ -3,6 +3,7 @@
 
 #include <stack>
 #include <omp.h>
+#include <cstring>
 
 class bit_vector
 {
@@ -19,13 +20,22 @@ public:
 		num_elements = n;
 		size = (int)(ceil((double)n/64));
 		elements = new unsigned long long[size];
-		for(int i=0;i<size;i++)
-			elements[i] = 0;
+		memset(elements,0,sizeof(unsigned long long) * size);
 	}
 
 	~bit_vector()
 	{
 		delete[] elements;
+	}
+
+	int get_size()
+	{
+		return size;
+	}
+
+	int get_num_elements()
+	{
+		return num_elements;
 	}
 
 	inline unsigned long long get_or_number(int &offset,bool &val)
@@ -67,13 +77,13 @@ public:
 		int count = 64;
 
 		while (val || (count >0)) {
-	    	if (val & 1)
-	        	bits.push(1);
-	    	else
-	        	bits.push(0);
+		    	if (val & 1)
+		        	bits.push(1);
+		    	else
+		        	bits.push(0);
 
-	    	val >>= 1;
-	    	count--;
+		    	val >>= 1;
+		    	count--;
 		}
 
 		while(!bits.empty())
