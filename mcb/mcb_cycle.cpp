@@ -230,7 +230,6 @@ int main(int argc,char* argv[])
 
 		bit_vector *cycle_vector = final_mcb.back()->get_cycle_vector(*non_tree_edges_map);
 
-		#pragma omp parallel for 
 		for(int j=e+1;j<num_non_tree_edges;j++)
 		{
 			unsigned product = cycle_vector->dot_product(support_vectors[j]);
