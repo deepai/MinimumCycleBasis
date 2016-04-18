@@ -184,16 +184,24 @@ int main(int argc,char* argv[])
 	bool *used_cycle = new bool[list_cycle.size()];
 	memset(used_cycle,0,sizeof(bool)*list_cycle.size());
 
-	globalTimer.start_timer();
+	double precompute_time = 0;
+	double cycle_inspection_time = 0;
+	double independence_test_time = 0;
 
 	//Main Outer Loop of the Algorithm.
 	for(int e=0;e<num_non_tree_edges;e++)
 	{
+		globalTimer.start_timer();
+
 		#pragma omp parallel for
 		for(int i=0;i<num_threads;i++)
 		{
 			multi_work[i]->precompute_supportVec(*non_tree_edges_map,*support_vectors[e]);
 		}
+
+		precompute_time += globalTimer.get_event_time();
+		globalTimer.start_timer();
+
 		for(int i=0;i<list_cycle.size();i++)
 		{
 			if(used_cycle[i] == true)
@@ -228,6 +236,9 @@ int main(int argc,char* argv[])
 			}
 		}
 
+		cycle_inspection_time += globalTimer.get_event_time();
+		globalTimer.start_timer();
+
 		bit_vector *cycle_vector = final_mcb.back()->get_cycle_vector(*non_tree_edges_map);
 
 		for(int j=e+1;j<num_non_tree_edges;j++)
@@ -237,12 +248,14 @@ int main(int argc,char* argv[])
 				support_vectors[j]->do_xor(support_vectors[e]);
 		}
 
+		independence_test_time += globalTimer.get_event_time();
+
 	}
 
-	localTime = globalTimer.get_event_time();
-	totalTime += localTime;
-
-	debug("Time for the main loop of the algorithm. =",localTime);
+	printf("Total time for the loop = %lf\n",precompute_time + cycle_inspection_time + independence_test_time);
+	printf("precompute_time = %lf\n",precompute_time);
+	printf("cycle_inspection_time = %lf\n",cycle_inspection_time);
+	printf("independence_test_time = %lf\n",independence_test_time);
 
 	int total_weight = 0;
 
@@ -251,8 +264,8 @@ int main(int argc,char* argv[])
 		total_weight +=  final_mcb[i]->total_length;
 	}
 
-	debug("Number of Cycles =",final_mcb.size());
-	debug("Total Weight = ",total_weight);
+	printf("Number of Cycles = %d\n",final_mcb.size());
+	printf("Total Weight = %d\n",total_weight);
 
 	return 0;
 }
