@@ -123,53 +123,20 @@ int main(int argc,char* argv[])
 
 	debug("Time to construct the trees =",localTime);
 
-	std::vector<cycle*> list_cycle;
+	std::set<cycle*,cycle::compare> list_cycle;
 
 	globalTimer.start_timer();
-	//block
+
+	for(int i=0;i<num_threads;i++)
 	{
-		int space[num_threads] = {0};
-		for(int i=0;i<num_threads;i++)
-			space[i] = multi_work[i]->list_cycles.size();
-
-		int prev = 0;
-		for(int i=0;i<num_threads;i++)
-		{
-			int temp = space[i];
-			space[i] = prev;
-			prev += temp;
-		}
-
-		//total number of cycles;
-		list_cycle.resize(prev);
-
-		#pragma omp parallel for
-		for(int i=0;i<num_threads;i++)
-		{
-			int threadId = omp_get_thread_num();
-			for(int j=0;j<multi_work[i]->list_cycles.size();j++)
-				list_cycle[space[i] + j] = multi_work[i]->list_cycles[j];
-
-			multi_work[i]->empty_cycles();
-
-		}
-
+		for(int j=0;j<multi_work[i]->list_cycles.size();j++)
+			list_cycle.insert(multi_work[i]->list_cycles[j]);
 	}
 
 	localTime = globalTimer.get_event_time();
 	totalTime += localTime;
 
 	debug("Time to collect the circles =",localTime);
-
-	globalTimer.start_timer();
-
-	std::sort(list_cycle.begin(),list_cycle.end(),cycle::compare());
-
-	localTime = globalTimer.get_event_time();
-	totalTime += localTime;
-
-	debug("Time to sort the circles =",localTime);
-	debug("Total number of cycles =",list_cycle.size());
 
 	//At this stage we have the shortest path trees and the cycles sorted in increasing order of length.
 
@@ -182,9 +149,6 @@ int main(int argc,char* argv[])
 	}
 
 	std::vector<cycle*> final_mcb;
-
-	bool *used_cycle = new bool[list_cycle.size()];
-	memset(used_cycle,0,sizeof(bool)*list_cycle.size());
 
 	double precompute_time = 0;
 	double cycle_inspection_time = 0;
@@ -204,12 +168,12 @@ int main(int argc,char* argv[])
 		precompute_time += globalTimer.get_event_time();
 		globalTimer.start_timer();
 
-		for(int i=0;i<list_cycle.size();i++)
+
+		for(std::set<cycle*,cycle::compare>::iterator cycle = list_cycle.begin();
+			cycle != list_cycle.end(); cycle++)
 		{
-			if(used_cycle[i] == true)
-				continue;
 			
-			unsigned normal_edge = list_cycle[i]->non_tree_edge_index;
+			unsigned normal_edge = (*cycle)->non_tree_edge_index;
 			unsigned reverse_edge = reduced_graph->reverse_edge->at(normal_edge);
 			unsigned bit_val = 0;
 
@@ -226,17 +190,19 @@ int main(int argc,char* argv[])
 				bit_val = support_vectors[e]->get_bit(non_tree_edges_map->at(normal_edge));
 			}
 
-			bit_val = (bit_val + list_cycle[i]->tree->node_pre_compute->at(row))%2;
-			bit_val = (bit_val + list_cycle[i]->tree->node_pre_compute->at(col))%2;
+			bit_val = (bit_val + (*cycle)->tree->node_pre_compute->at(row))%2;
+			bit_val = (bit_val + (*cycle)->tree->node_pre_compute->at(col))%2;
 
 			if(bit_val == 1)
 			{
 
-				final_mcb.push_back(list_cycle[i]);
-				used_cycle[i] = true;
+				final_mcb.push_back(*cycle);
+				list_cycle.erase(cycle);
 				break;
 			}
 		}
+
+
 
 		cycle_inspection_time += globalTimer.get_event_time();
 		globalTimer.start_timer();
