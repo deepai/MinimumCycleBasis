@@ -64,6 +64,7 @@ public:
 		return result;
 	}
 
+	//Return the actual index of the element containing the offset.
 	inline unsigned long long &get_element_for_pos(int &pos)
 	{
 		int index = pos/64;
@@ -134,6 +135,7 @@ public:
 		printf("\n");
 	}
 
+	//get bit value at the position pos such that pos belongs to [0- num_elements - 1]
 	inline unsigned get_bit(int pos)
 	{
 		unsigned long long &item = get_element_for_pos(pos);
