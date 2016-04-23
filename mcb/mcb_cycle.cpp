@@ -123,7 +123,7 @@ int main(int argc,char* argv[])
 
 	debug("Time to construct the trees =",localTime);
 
-	std::set<cycle*,cycle::compare> list_cycle;
+	std::multiset<cycle*,cycle::compare> list_cycle;
 
 	globalTimer.start_timer();
 
@@ -169,7 +169,7 @@ int main(int argc,char* argv[])
 		globalTimer.start_timer();
 
 
-		for(std::set<cycle*,cycle::compare>::iterator cycle = list_cycle.begin();
+		for(std::multiset<cycle*,cycle::compare>::iterator cycle = list_cycle.begin();
 			cycle != list_cycle.end(); cycle++)
 		{
 			
