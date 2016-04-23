@@ -141,11 +141,14 @@ int main(int argc,char* argv[])
 	globalTimer.start_timer();
 
 	//produce shortest path trees across all the nodes.
-	#pragma omp parallel for 
+
+	int count_cycles = 0;
+
+	#pragma omp parallel for reduction(+:count_cycles)
 	for(int i = 0; i < reduced_graph->Nodes; ++i)
 	{
 		int threadId = omp_get_thread_num();
-		multi_work[threadId]->produce_sp_tree_and_cycles(i,reduced_graph);
+		count_cycles += multi_work[threadId]->produce_sp_tree_and_cycles(i,reduced_graph);
 	}
 
 	localTime = globalTimer.get_event_time();
@@ -162,6 +165,8 @@ int main(int argc,char* argv[])
 		for(int j=0;j<multi_work[i]->list_cycles.size();j++)
 			list_cycle.insert(multi_work[i]->list_cycles[j]);
 	}
+
+	assert(list_cycle.size() == count_cycles);
 
 	localTime = globalTimer.get_event_time();
 	totalTime += localTime;

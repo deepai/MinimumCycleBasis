@@ -150,12 +150,14 @@ int main(int argc,char* argv[])
 	for(int i=0;i<num_threads;i++)
 		multi_work[i] = new worker_thread(reduced_graph);
 
+	int count_cycles = 0;
+
 	//produce shortest path trees across all the nodes.
-	#pragma omp parallel for 
+	#pragma omp parallel for reduction(+:count_cycles)
 	for(int i = 0; i < reduced_graph->Nodes; i++)
 	{
 		int threadId = omp_get_thread_num();
-		multi_work[threadId]->produce_sp_tree_and_cycles(i,reduced_graph);
+		count_cycles += multi_work[threadId]->produce_sp_tree_and_cycles(i,reduced_graph);
 	}
 
 	std::set<cycle*,cycle::compare> list_cycle;
@@ -163,9 +165,12 @@ int main(int argc,char* argv[])
 	for(int i=0;i<num_threads;i++)
 	{
 		for(int j=0;j<multi_work[i]->list_cycles.size();j++)
+		{
 			list_cycle.insert(multi_work[i]->list_cycles[j]);
+		}
 	}
 
+	assert(list_cycle.size() == count_cycles);
 
 	printf("List Cycles\n");
 	for(std::set<cycle*,cycle::compare>::iterator cycle = list_cycle.begin();
