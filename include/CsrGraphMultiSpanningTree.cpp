@@ -1,4 +1,3 @@
-#include <stack>
 #include "CsrGraphMulti.h"
 
 /**
@@ -26,7 +25,6 @@ std::vector<unsigned> *csr_multi_graph::get_spanning_tree(std::vector<unsigned> 
 		std::vector<unsigned> *rowOffsets_internal;
 
 		std::vector<unsigned> **non_tree_edges_internal;
-		std::vector<unsigned> *stack;
 
 		std::vector<unsigned> *reverse_edge_internal;
 
@@ -41,7 +39,6 @@ std::vector<unsigned> *csr_multi_graph::get_spanning_tree(std::vector<unsigned> 
 		{
 			spanning_tree = new std::vector<unsigned>();
 			visited = new std::vector<bool>();
-			stack = new std::vector<unsigned>();
 			parent = new std::vector<int>();
 			is_tree_edge = new std::vector<unsigned char>();
 
@@ -67,7 +64,6 @@ std::vector<unsigned> *csr_multi_graph::get_spanning_tree(std::vector<unsigned> 
 		{
 			visited->at(row) = true;
 
-			stack->push_back(row);
 
 			for(unsigned offset = rowOffsets_internal->at(row); offset < rowOffsets_internal->at(row + 1); 
 				offset++)
@@ -89,23 +85,40 @@ std::vector<unsigned> *csr_multi_graph::get_spanning_tree(std::vector<unsigned> 
 					{
 						int reverse_index = reverse_edge_internal->at(offset);
 						if(is_tree_edge->at(reverse_index) == 1)
-							continue;
-						else if(is_tree_edge->at(offset) == 0)
 						{
-							(*non_tree_edges_internal)->push_back(offset);
-							is_tree_edge->at(offset) = 2;
-							is_tree_edge->at(reverse_index) = 2;
+							is_tree_edge->at(offset) = 1;
 							continue;
 						}
-						else
+						else if(is_tree_edge->at(reverse_index) == 2)
+						{
+							is_tree_edge->at(offset) = 2;
 							continue;
+						}
+
+						else
+						{
+							is_tree_edge->at(offset) = 2;
+							is_tree_edge->at(reverse_index) = 2;
+
+							if(row < column)
+								(*non_tree_edges_internal)->push_back(offset);
+							else
+								(*non_tree_edges_internal)->push_back(reverse_index);
+
+							continue;
+						}
 					}
 					else if(is_tree_edge->at(offset) == 0)
 					{
 						int reverse_index = reverse_edge_internal->at(offset);
-						(*non_tree_edges_internal)->push_back(offset);
 						is_tree_edge->at(offset) = 2;
 						is_tree_edge->at(reverse_index) = 2;
+
+						if(row < column)
+							(*non_tree_edges_internal)->push_back(offset);
+						else
+							(*non_tree_edges_internal)->push_back(reverse_index);
+
 						continue;
 					}
 					else
@@ -113,7 +126,6 @@ std::vector<unsigned> *csr_multi_graph::get_spanning_tree(std::vector<unsigned> 
 				}
 			}
 
-			stack->pop_back();
 		}
 
 		std::vector<unsigned> *run_dfs(unsigned row)
@@ -128,7 +140,6 @@ std::vector<unsigned> *csr_multi_graph::get_spanning_tree(std::vector<unsigned> 
 		~DFS_HELPER()
 		{
 			visited->clear();
-			stack->clear();
 			parent->clear();
 			is_tree_edge->clear();
 		}

@@ -102,6 +102,8 @@ int main(int argc,char* argv[])
 	for(int i=0;i<initial_spanning_tree->non_tree_edges->size();i++)
 		non_tree_edges_map->insert(std::make_pair(initial_spanning_tree->non_tree_edges->at(i),i));
 
+	assert(non_tree_edges_map->size() == initial_spanning_tree->non_tree_edges->size());
+
 	worker_thread **multi_work = new worker_thread*[num_threads];
 	for(int i=0;i<num_threads;i++)
 		multi_work[i] = new worker_thread(reduced_graph);
