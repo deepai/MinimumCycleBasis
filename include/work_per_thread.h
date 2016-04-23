@@ -30,7 +30,7 @@ struct worker_thread
 	}
 
 
-	void produce_sp_tree_and_cycles(int src,csr_multi_graph *graph)
+	int produce_sp_tree_and_cycles(int src,csr_multi_graph *graph)
 	{
 		helper->reset();
 
@@ -46,6 +46,8 @@ struct worker_thread
 		int total_weight;
 		bool is_edge_cycle;
 
+		int count_cycle = 0;
+
 		for(int i=0;i<non_tree_edges->size();i++)
 		{
 			is_edge_cycle = helper->is_edge_cycle(non_tree_edges->at(i),total_weight,src);
@@ -55,11 +57,15 @@ struct worker_thread
 				cycle *cle = new cycle(sp_tree,non_tree_edges->at(i));
 				cle->total_length = total_weight;
 				list_cycles.push_back(cle);
+				count_cycle++;
 			}
 		}
 
 		sp_tree->remove_non_tree_edges();
 		sp_tree->node_pre_compute = new std::vector<unsigned>(graph->Nodes);
+
+		return count_cycle;
+
 	}
 
 	void empty_cycles()
