@@ -160,20 +160,28 @@ int main(int argc,char* argv[])
 		count_cycles += multi_work[threadId]->produce_sp_tree_and_cycles(i,reduced_graph);
 	}
 
-	std::set<cycle*,cycle::compare> list_cycle;
+	std::vector<cycle*> list_cycle_vec;
+	std::list<cycle*> list_cycle;
 
 	for(int i=0;i<num_threads;i++)
 	{
 		for(int j=0;j<multi_work[i]->list_cycles.size();j++)
-		{
-			list_cycle.insert(multi_work[i]->list_cycles[j]);
-		}
+			list_cycle_vec.push_back(multi_work[i]->list_cycles[j]);
 	}
+
+	sort(list_cycle_vec.begin(),list_cycle_vec.end(),cycle::compare());
+
+	for(int i=0; i<list_cycle_vec.size(); i++)
+	{
+		list_cycle.push_back(list_cycle_vec[i]);
+	}
+
+	list_cycle_vec.clear();
 
 	assert(list_cycle.size() == count_cycles);
 
 	printf("List Cycles\n");
-	for(std::set<cycle*,cycle::compare>::iterator cycle = list_cycle.begin();
+	for(std::list<cycle*>::iterator cycle = list_cycle.begin();
 			cycle != list_cycle.end(); cycle++)
 	{
 		printf("%u-(%u - %u) : %d\n",((*cycle))->get_root() + 1,
@@ -209,7 +217,7 @@ int main(int argc,char* argv[])
 			multi_work[i]->precompute_supportVec(*non_tree_edges_map,*support_vectors[e]);
 		}
 
-		for(std::set<cycle*,cycle::compare>::iterator cycle = list_cycle.begin();
+		for(std::list<cycle*>::iterator cycle = list_cycle.begin();
 			cycle != list_cycle.end(); cycle++)
 		{
 			
@@ -241,6 +249,8 @@ int main(int argc,char* argv[])
 				break;
 			}
 		}
+
+		list_cycle.clear();
 
 		bit_vector *cycle_vector = final_mcb.back()->get_cycle_vector(*non_tree_edges_map);
 		final_mcb.back()->print();

@@ -156,15 +156,26 @@ int main(int argc,char* argv[])
 
 	debug("Time to construct the trees =",localTime);
 
-	std::multiset<cycle*,cycle::compare> list_cycle;
-
 	globalTimer.start_timer();
+
+	std::vector<cycle*> list_cycle_vec;
+	std::list<cycle*> list_cycle;
 
 	for(int i=0;i<num_threads;i++)
 	{
 		for(int j=0;j<multi_work[i]->list_cycles.size();j++)
-			list_cycle.insert(multi_work[i]->list_cycles[j]);
+			list_cycle_vec.push_back(multi_work[i]->list_cycles[j]);
 	}
+
+	sort(list_cycle_vec.begin(),list_cycle_vec.end(),cycle::compare());
+
+	for(int i=0; i<list_cycle_vec.size(); i++)
+	{
+		list_cycle.push_back(list_cycle_vec[i]);
+	}
+
+	list_cycle_vec.clear();
+
 
 	assert(list_cycle.size() == count_cycles);
 
@@ -204,7 +215,7 @@ int main(int argc,char* argv[])
 		globalTimer.start_timer();
 
 
-		for(std::multiset<cycle*,cycle::compare>::iterator cycle = list_cycle.begin();
+		for(std::list<cycle*>::iterator cycle = list_cycle.begin();
 			cycle != list_cycle.end(); cycle++)
 		{
 			
@@ -254,6 +265,8 @@ int main(int argc,char* argv[])
 		independence_test_time += globalTimer.get_event_time();
 
 	}
+
+	list_cycle.clear();
 
 	printf("Total time for the loop = %lf\n",precompute_time + cycle_inspection_time + independence_test_time);
 	printf("precompute_time = %lf\n",precompute_time);
