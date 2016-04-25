@@ -250,8 +250,6 @@ int main(int argc,char* argv[])
 			}
 		}
 
-		list_cycle.clear();
-
 		bit_vector *cycle_vector = final_mcb.back()->get_cycle_vector(*non_tree_edges_map);
 		final_mcb.back()->print();
 
@@ -268,6 +266,8 @@ int main(int argc,char* argv[])
 			support_vectors[j]->print();
 		}
 	}
+
+	list_cycle.clear();
 
 	debug("\nPrinting final mcbs\n");
 
