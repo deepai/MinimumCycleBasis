@@ -271,12 +271,16 @@ int main(int argc,char* argv[])
 
 	debug("\nPrinting final mcbs\n");
 
+	int total_weight = 0;
+
 	for(int i=0;i<final_mcb.size();i++)
 	{
 		final_mcb[i]->print();
+
+		total_weight += final_mcb[i]->total_length;
 	}
 
-
+	printf("Total Weight = %d\n",total_weight);
 
 	return 0;
 }
