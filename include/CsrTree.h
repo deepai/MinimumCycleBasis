@@ -45,7 +45,7 @@ public:
 
 		tree_edges = parent_graph->get_spanning_tree(&non_tree_edges,src);
 
-		std::sort(non_tree_edges->begin(),non_tree_edges->end(),compare(parent_graph));
+		//std::sort(non_tree_edges->begin(),non_tree_edges->end(),compare(parent_graph));
 	}
 
 	void obtain_shortest_path_tree(dijkstra &helper,bool populate_non_tree_edges,int src)
