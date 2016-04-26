@@ -101,15 +101,19 @@ struct worker_thread
 				if(non_tree_edge_map.find(edge_offset) != non_tree_edge_map.end())
 				{
 					bit = vector.get_bit(non_tree_edge_map.at(edge_offset));
+					bit = (bit + 1)%2;
 					precompute_nodes->at(column) = (precompute_nodes->at(row) + bit)%2;
 				}
 				else if(non_tree_edge_map.find(reverse_edge) != non_tree_edge_map.end())
 				{
 					bit = vector.get_bit(non_tree_edge_map.at(reverse_edge));
+					bit = (bit + 1)%2;
 					precompute_nodes->at(column) = (precompute_nodes->at(row) + bit)%2;
 				}
 				else //tree edge
+				{
 					precompute_nodes->at(column) = precompute_nodes->at(row);
+				}
 			}
 		}
 	}
