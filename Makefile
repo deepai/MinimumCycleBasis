@@ -11,4 +11,6 @@ clean:
 	rm mcb/*.o -f 
 	rm mcb/mcb_cycle -f
 	rm mcb/Test -f 
+	rm mcb/Test_deg_two_remove
+	rm mcb/mcb_cycle_deg_two_remove
 	rm include/*.o -f

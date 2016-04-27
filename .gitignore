@@ -5,5 +5,7 @@ include/*.o
 mcb/*.o
 mcb/mcb_cycle
 mcb/Test
+mcb/mcb_cycle_deg_two_remove
+mcb/Test_deg_two_remove
 *.mtx
 RESULT_MCB/
