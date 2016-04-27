@@ -23,11 +23,12 @@ DEPS = $(patsubst %,$(EX_INCLUDE)/%,$(_DEPS))
 _EXTRA_DEPS = mmio.o Host_Timer.o CsrGraphSpanningTree.o CsrGraphDegreeTwoRemoval.o CsrGraphMultiSpanningTree.o
 EXTRA_DEPS = $(patsubst %,$(EX_INCLUDE)/%,$(_EXTRA_DEPS))
 
-OBJ = mcb_cycle_deg_two_remove.o
+OBJ1 = mcb_cycle_deg_two_remove.o
+OBJ2 = mcb_cycle.o
 
 all: mcb_cycle_deg_two_remove Test_deg_two_remove mcb_cycle Test
 
-mcb_cycle_deg_two_remove: $(OBJ) $(EXTRA_DEPS)
+mcb_cycle_deg_two_remove: $(OBJ1) $(EXTRA_DEPS)
 	$(CC) -o $@ $^ $(CFLAGS) $(LIBS) $(DFLAGS)
 
 mcb_cycle_deg_two_remove.o: mcb_cycle_deg_two_remove.cpp $(DEPS)
@@ -39,7 +40,7 @@ Test_deg_two_remove: Test_deg_two_remove.o $(EXTRA_DEPS)
 Test_deg_two_remove.o: Test_deg_two_remove.cpp $(DEPS)
 	$(CC) -c -o $@ $< $(CFLAGS) $(DFLAGS)
 
-mcb_cycle: $(OBJ) $(EXTRA_DEPS)
+mcb_cycle: $(OBJ2) $(EXTRA_DEPS)
 	$(CC) -o $@ $^ $(CFLAGS) $(LIBS) $(DFLAGS)
 
 mcb_cycle.o: mcb_cycle.cpp $(DEPS)
