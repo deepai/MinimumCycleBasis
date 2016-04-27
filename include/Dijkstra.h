@@ -21,7 +21,7 @@ struct dijkstra
 	{
 		bool operator()(std::pair<int,int> &a,std::pair<int,int> &b)
 		{
-			return (a.second < b.second);
+			return (a.second > b.second);
 		}
 	};
 	std::priority_queue<std::pair<int,int>,std::vector<std::pair<int,int>>,Compare> pq; 
