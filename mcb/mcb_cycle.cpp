@@ -70,6 +70,7 @@ int main(int argc,char* argv[])
 	csr_graph *graph=new csr_graph();
 
 	graph->Nodes = nodes;
+	graph->initial_edge_count = edges;
 	/*
 	 * ====================================================================================
 	 * Fill Edges.
@@ -115,6 +116,8 @@ int main(int argc,char* argv[])
 		//debug(row+1,col+1,total_weight);
 	}
 
+	assert(nodes_removed == graph->get_num_degree_two_vertices());
+
 	debug ("Number of nodes removed = ",nodes_removed);
 
 	csr_multi_graph *reduced_graph = csr_multi_graph::get_modified_graph(graph,
@@ -126,6 +129,8 @@ int main(int argc,char* argv[])
 	initial_spanning_tree->populate_tree_edges(true,source_vertex);
 
 	int num_non_tree_edges = initial_spanning_tree->non_tree_edges->size();
+	
+	assert(num_non_tree_edges == edges -nodes + 1);
 
 	std::unordered_map<unsigned,unsigned> *non_tree_edges_map = new std::unordered_map<unsigned,unsigned>();
 	
