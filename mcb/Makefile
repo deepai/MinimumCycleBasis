@@ -23,9 +23,21 @@ DEPS = $(patsubst %,$(EX_INCLUDE)/%,$(_DEPS))
 _EXTRA_DEPS = mmio.o Host_Timer.o CsrGraphSpanningTree.o CsrGraphDegreeTwoRemoval.o CsrGraphMultiSpanningTree.o
 EXTRA_DEPS = $(patsubst %,$(EX_INCLUDE)/%,$(_EXTRA_DEPS))
 
-OBJ = mcb_cycle.o
+OBJ = mcb_cycle_deg_two_remove.o
 
-all: mcb_cycle Test
+all: mcb_cycle_deg_two_remove Test_deg_two_remove mcb_cycle Test
+
+mcb_cycle_deg_two_remove: $(OBJ) $(EXTRA_DEPS)
+	$(CC) -o $@ $^ $(CFLAGS) $(LIBS) $(DFLAGS)
+
+mcb_cycle_deg_two_remove.o: mcb_cycle_deg_two_remove.cpp $(DEPS)
+	$(CC) -c -o $@ $< $(CFLAGS) $(DFLAGS)
+
+Test_deg_two_remove: Test_deg_two_remove.o $(EXTRA_DEPS)
+	$(CC) -o $@ $^ $(CFLAGS) $(LIBS) $(DFLAGS)
+
+Test_deg_two_remove.o: Test_deg_two_remove.cpp $(DEPS)
+	$(CC) -c -o $@ $< $(CFLAGS) $(DFLAGS)
 
 mcb_cycle: $(OBJ) $(EXTRA_DEPS)
 	$(CC) -o $@ $^ $(CFLAGS) $(LIBS) $(DFLAGS)
@@ -44,4 +56,4 @@ Test.o: Test.cpp $(DEPS)
 .PHONY: clean
 
 clean:
-	rm -f $(ODIR)/*.o *~ core $(INCDIR)/*~  *.o ../include/*.o mcb_cycle Test
+	rm -f $(ODIR)/*.o *~ core $(INCDIR)/*~  *.o ../include/*.o mcb_cycle_deg_two_remove Test_deg_two_remove mcb_cycle Test

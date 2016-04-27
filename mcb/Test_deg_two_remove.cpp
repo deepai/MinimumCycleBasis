@@ -12,9 +12,8 @@
 #include <algorithm>
 #include <atomic>
 #include <list>
-#include <cstring>
 #include <unordered_set>
-#include <unordered_map>
+#include <cstring>
 
 #include "FileReader.h"
 #include "Files.h"
@@ -22,7 +21,6 @@
 #include "Host_Timer.h"
 #include "CsrGraph.h"
 #include "CsrTree.h"
-#include "CsrGraphMulti.h"
 #include "bit_vector.h"
 #include "work_per_thread.h"
 
@@ -33,7 +31,6 @@ std::string InputFileName;
 std::string OutputFileDirectory;
 
 double totalTime = 0;
-double localTime = 0;
 
 int main(int argc,char* argv[])
 {
@@ -70,7 +67,6 @@ int main(int argc,char* argv[])
 	csr_graph *graph=new csr_graph();
 
 	graph->Nodes = nodes;
-	graph->initial_edge_count = edges;
 	/*
 	 * ====================================================================================
 	 * Fill Edges.
@@ -86,51 +82,83 @@ int main(int argc,char* argv[])
 
 	Reader.fileClose();
 
-	int source_vertex = 0;
+	std::vector<std::vector<unsigned> > *chains = new std::vector<std::vector<unsigned> >();
+
+	debug("Input File Reading Complete...\n");
+
+	int source_vertex;
+
+	std::vector<unsigned> *remove_edge_list = graph->mark_degree_two_chains(&chains,source_vertex);
+	//initial_spanning_tree.populate_tree_edges(true,NULL,souce_vertex);
+
+	std::vector<std::vector<unsigned> > *edges_new_list = new std::vector<std::vector<unsigned> >();
+
+	int nodes_removed = 0;
+
+	for(int i=0;i<chains->size();i++)
+	{
+		unsigned row,col;
+		unsigned total_weight = graph->sum_edge_weights(chains->at(i),row,col);
+
+		nodes_removed += chains->at(i).size() - 1;
+
+		std::vector<unsigned> new_edge = std::vector<unsigned>();
+		new_edge.push_back(row);
+		new_edge.push_back(col);
+		new_edge.push_back(total_weight);
+
+		edges_new_list->push_back(new_edge);
+		//debug(row+1,col+1,total_weight);
+	}
+
+	debug ("Number of nodes removed = ",nodes_removed);
 
 	csr_multi_graph *reduced_graph = csr_multi_graph::get_modified_graph(graph,
-									     NULL,
-									     NULL,
-									     0);
+									     remove_edge_list,
+									     edges_new_list,
+									     nodes_removed);
+
+	//Node Validity
+	assert(reduced_graph->Nodes + nodes_removed == graph->Nodes);
+
+	reduced_graph->print_graph();
 
 	csr_tree *initial_spanning_tree = new csr_tree(reduced_graph);
 	initial_spanning_tree->populate_tree_edges(true,source_vertex);
 
 	int num_non_tree_edges = initial_spanning_tree->non_tree_edges->size();
 
-	assert(num_non_tree_edges == edges - nodes + 1);
-	assert(graph->get_total_weight() == reduced_graph->get_total_weight());
+	//Spanning Tree Validity
+	assert(num_non_tree_edges == reduced_graph->rows->size()/2 - reduced_graph->Nodes + 1);
+
+	initial_spanning_tree->print_tree_edges();
+	initial_spanning_tree->print_non_tree_edges();
 
 	std::unordered_map<unsigned,unsigned> *non_tree_edges_map = new std::unordered_map<unsigned,unsigned>();
 	
-	for(int i=0;i<initial_spanning_tree->non_tree_edges->size();i++)
-		non_tree_edges_map->insert(std::make_pair(initial_spanning_tree->non_tree_edges->at(i),i));
+	debug("Map of non-tree edges");
 
-	assert(non_tree_edges_map->size() == initial_spanning_tree->non_tree_edges->size());
+	for(int i=0;i<initial_spanning_tree->non_tree_edges->size();i++)
+	{
+		non_tree_edges_map->insert(std::make_pair(initial_spanning_tree->non_tree_edges->at(i),i));
+		printf("%d : %u - %u\n",i,reduced_graph->rows->at(initial_spanning_tree->non_tree_edges->at(i)) + 1,
+			reduced_graph->columns->at(initial_spanning_tree->non_tree_edges->at(i)) + 1);
+	}
+
 
 	worker_thread **multi_work = new worker_thread*[num_threads];
 	for(int i=0;i<num_threads;i++)
 		multi_work[i] = new worker_thread(reduced_graph);
 
-	globalTimer.start_timer();
-
-	//produce shortest path trees across all the nodes.
-
 	int count_cycles = 0;
 
+	//produce shortest path trees across all the nodes.
 	#pragma omp parallel for reduction(+:count_cycles)
-	for(int i = 0; i < reduced_graph->Nodes; ++i)
+	for(int i = 0; i < reduced_graph->Nodes; i++)
 	{
 		int threadId = omp_get_thread_num();
 		count_cycles += multi_work[threadId]->produce_sp_tree_and_cycles(i,reduced_graph);
 	}
-
-	localTime = globalTimer.get_event_time();
-	totalTime += localTime;
-
-	debug("Time to construct the trees =",localTime);
-
-	globalTimer.start_timer();
 
 	std::vector<cycle*> list_cycle_vec;
 	std::list<cycle*> list_cycle;
@@ -150,18 +178,26 @@ int main(int argc,char* argv[])
 
 	list_cycle_vec.clear();
 
-
 	assert(list_cycle.size() == count_cycles);
 
-	localTime = globalTimer.get_event_time();
-	totalTime += localTime;
-
-	debug("Time to collect the circles =",localTime);
+	printf("List Cycles\n");
+	for(std::list<cycle*>::iterator cycle = list_cycle.begin();
+			cycle != list_cycle.end(); cycle++)
+	{
+		printf("%u-(%u - %u) : %d\n",((*cycle))->get_root() + 1,
+					reduced_graph->rows->at((*cycle)->non_tree_edge_index) + 1,
+					reduced_graph->columns->at((*cycle)->non_tree_edge_index) + 1,
+					(*cycle)->total_length);
+	}
 
 	//At this stage we have the shortest path trees and the cycles sorted in increasing order of length.
 
+
 	//generate the bit vectors
 	bit_vector **support_vectors = new bit_vector*[num_non_tree_edges];
+
+	printf("Number of non_tree_edges = %d\n",num_non_tree_edges);
+
 	for(int i=0;i<num_non_tree_edges;i++)
 	{
 		support_vectors[i] = new bit_vector(num_non_tree_edges);
@@ -170,24 +206,16 @@ int main(int argc,char* argv[])
 
 	std::vector<cycle*> final_mcb;
 
-	double precompute_time = 0;
-	double cycle_inspection_time = 0;
-	double independence_test_time = 0;
-
 	//Main Outer Loop of the Algorithm.
 	for(int e=0;e<num_non_tree_edges;e++)
 	{
-		globalTimer.start_timer();
-
+		debug("Si is as follows.",e);
+		support_vectors[e]->print();
 		#pragma omp parallel for
 		for(int i=0;i<num_threads;i++)
 		{
 			multi_work[i]->precompute_supportVec(*non_tree_edges_map,*support_vectors[e]);
 		}
-
-		precompute_time += globalTimer.get_event_time();
-		globalTimer.start_timer();
-
 
 		for(std::list<cycle*>::iterator cycle = list_cycle.begin();
 			cycle != list_cycle.end(); cycle++)
@@ -222,39 +250,36 @@ int main(int argc,char* argv[])
 			}
 		}
 
-
-
-		cycle_inspection_time += globalTimer.get_event_time();
-		globalTimer.start_timer();
-
 		bit_vector *cycle_vector = final_mcb.back()->get_cycle_vector(*non_tree_edges_map);
+		final_mcb.back()->print();
 
+		printf("Ci ");
+		cycle_vector->print();
+
+		#pragma omp parallel for 
 		for(int j=e+1;j<num_non_tree_edges;j++)
 		{
 			unsigned product = cycle_vector->dot_product(support_vectors[j]);
 			if(product == 1)
 				support_vectors[j]->do_xor(support_vectors[e]);
+			printf("%d ",product);
+			support_vectors[j]->print();
 		}
-
-		independence_test_time += globalTimer.get_event_time();
-
 	}
 
 	list_cycle.clear();
 
-	printf("Total time for the loop = %lf\n",precompute_time + cycle_inspection_time + independence_test_time);
-	printf("precompute_time = %lf\n",precompute_time);
-	printf("cycle_inspection_time = %lf\n",cycle_inspection_time);
-	printf("independence_test_time = %lf\n",independence_test_time);
+	debug("\nPrinting final mcbs\n");
 
 	int total_weight = 0;
 
 	for(int i=0;i<final_mcb.size();i++)
 	{
-		total_weight +=  final_mcb[i]->total_length;
+		final_mcb[i]->print();
+
+		total_weight += final_mcb[i]->total_length;
 	}
 
-	printf("Number of Cycles = %d\n",final_mcb.size());
 	printf("Total Weight = %d\n",total_weight);
 
 	return 0;

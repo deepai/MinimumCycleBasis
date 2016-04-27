@@ -82,44 +82,15 @@ int main(int argc,char* argv[])
 
 	Reader.fileClose();
 
-	std::vector<std::vector<unsigned> > *chains = new std::vector<std::vector<unsigned> >();
-
-	debug("Input File Reading Complete...\n");
-
-	int source_vertex;
-
-	std::vector<unsigned> *remove_edge_list = graph->mark_degree_two_chains(&chains,source_vertex);
-	//initial_spanning_tree.populate_tree_edges(true,NULL,souce_vertex);
-
-	std::vector<std::vector<unsigned> > *edges_new_list = new std::vector<std::vector<unsigned> >();
-
-	int nodes_removed = 0;
-
-	for(int i=0;i<chains->size();i++)
-	{
-		unsigned row,col;
-		unsigned total_weight = graph->sum_edge_weights(chains->at(i),row,col);
-
-		nodes_removed += chains->at(i).size() - 1;
-
-		std::vector<unsigned> new_edge = std::vector<unsigned>();
-		new_edge.push_back(row);
-		new_edge.push_back(col);
-		new_edge.push_back(total_weight);
-
-		edges_new_list->push_back(new_edge);
-		//debug(row+1,col+1,total_weight);
-	}
-
-	debug ("Number of nodes removed = ",nodes_removed);
+	int source_vertex = 0;
 
 	csr_multi_graph *reduced_graph = csr_multi_graph::get_modified_graph(graph,
-									     remove_edge_list,
-									     edges_new_list,
-									     nodes_removed);
+									     NULL,
+									     NULL,
+									     0);
 
 	//Node Validity
-	assert(reduced_graph->Nodes + nodes_removed == graph->Nodes);
+	assert(reduced_graph->Nodes + 0 == graph->Nodes);
 
 	reduced_graph->print_graph();
 
