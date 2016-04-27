@@ -88,9 +88,6 @@ int main(int argc,char* argv[])
 
 	std::vector<std::vector<unsigned> > *chains = new std::vector<std::vector<unsigned> >();
 
-	debug("Input File Reading Complete...\n");
-	debug("Generating Initial Spanning Tree and Ear Decomposition");
-
 	int source_vertex;
 
 	std::vector<unsigned> *remove_edge_list = graph->mark_degree_two_chains(&chains,source_vertex);
@@ -118,7 +115,7 @@ int main(int argc,char* argv[])
 
 	assert(nodes_removed == graph->get_num_degree_two_vertices());
 
-	debug ("Number of nodes removed = ",nodes_removed);
+	printf("Number of nodes removed = %d\n",nodes_removed);
 
 	csr_multi_graph *reduced_graph = csr_multi_graph::get_modified_graph(graph,
 									     remove_edge_list,
@@ -160,7 +157,7 @@ int main(int argc,char* argv[])
 	localTime = globalTimer.get_event_time();
 	totalTime += localTime;
 
-	debug("Time to construct the trees =",localTime);
+	printf("Time to construct the trees = %lf\n",localTime);
 
 	globalTimer.start_timer();
 
@@ -188,7 +185,7 @@ int main(int argc,char* argv[])
 	localTime = globalTimer.get_event_time();
 	totalTime += localTime;
 
-	debug("Time to collect the circles =",localTime);
+	printf("Time to collect the circles = %lf",localTime);
 
 	//At this stage we have the shortest path trees and the cycles sorted in increasing order of length.
 

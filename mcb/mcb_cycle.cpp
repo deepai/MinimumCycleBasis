@@ -128,7 +128,7 @@ int main(int argc,char* argv[])
 	localTime = globalTimer.get_event_time();
 	totalTime += localTime;
 
-	debug("Time to construct the trees =",localTime);
+	printf("Time to construct the trees = %lf\n",localTime);
 
 	globalTimer.start_timer();
 
@@ -156,7 +156,7 @@ int main(int argc,char* argv[])
 	localTime = globalTimer.get_event_time();
 	totalTime += localTime;
 
-	debug("Time to collect the circles =",localTime);
+	printf("Time to collect the circles = %lf\n",localTime);
 
 	//At this stage we have the shortest path trees and the cycles sorted in increasing order of length.
 
