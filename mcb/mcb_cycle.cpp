@@ -130,7 +130,8 @@ int main(int argc,char* argv[])
 
 	int num_non_tree_edges = initial_spanning_tree->non_tree_edges->size();
 	
-	assert(num_non_tree_edges == edges -nodes + 1);
+	assert(num_non_tree_edges == edges - nodes + 1);
+	assert(graph->get_total_weight() == reduced_graph->get_total_weight());
 
 	std::unordered_map<unsigned,unsigned> *non_tree_edges_map = new std::unordered_map<unsigned,unsigned>();
 	
