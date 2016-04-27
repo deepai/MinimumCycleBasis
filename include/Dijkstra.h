@@ -179,6 +179,28 @@ struct dijkstra
 		return (row == src);
 	}
 
+	bool is_edge_cycle_using_s_values(std::vector<unsigned> &s_values,unsigned &edge_offset,int &total_weight,unsigned src)
+	{
+		unsigned row,col;
+		total_weight = 0;
+
+		row = graph->rows->at(edge_offset);
+		col = graph->columns->at(edge_offset);
+
+		if(s_values[row] != s_values[col])
+		{
+			total_weight += distance[row] + distance[col] + graph->weights->at(edge_offset);
+			return true;
+		}
+		else if((s_values[row] == s_values[col]) && (s_values[row] == src))
+		{
+			total_weight += distance[row] + distance[col] + graph->weights->at(edge_offset);
+			return true;
+		}
+		else
+			return false;
+	}
+
 	void assert_correctness(unsigned src)
 	{
 		for(int i=0;i<graph->Nodes;i++)

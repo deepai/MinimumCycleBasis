@@ -14,6 +14,7 @@ public:
 	std::vector<unsigned> *non_tree_edges = NULL;
 	std::vector<unsigned> *node_pre_compute;
 	std::vector<int> *parent_edges;
+	std::vector<unsigned> *s_values;
 
 	struct compare
 	{
@@ -46,6 +47,34 @@ public:
 		tree_edges = parent_graph->get_spanning_tree(&non_tree_edges,src);
 
 		//std::sort(non_tree_edges->begin(),non_tree_edges->end(),compare(parent_graph));
+	}
+
+	void compute_s_values(std::vector<int> &parent)
+	{
+		assert(tree_edges != NULL);
+		assert(!parent.empty());
+
+		s_values = new std::vector<unsigned>(parent_graph->Nodes);
+
+		unsigned edge_offset,row,col;
+
+		for(int i=0;i<tree_edges->size();i++)
+		{
+			edge_offset = tree_edges->at(i);
+			row = parent_graph->rows->at(edge_offset);
+			col = parent_graph->columns->at(edge_offset);
+
+			s_values->at(root) = root;
+
+			if(row == root)
+			{
+				s_values->at(col) = col;
+			}
+			else
+			{
+				s_values->at(col) = s_values->at(row);
+			}
+		}
 	}
 
 	void obtain_shortest_path_tree(dijkstra &helper,bool populate_non_tree_edges,int src)
