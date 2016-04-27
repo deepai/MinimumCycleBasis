@@ -25,6 +25,8 @@
 #include "CsrGraphMulti.h"
 #include "bit_vector.h"
 #include "work_per_thread.h"
+#include "cycle_searcher.h"
+#include "isometric_cycle.h"
 
 debugger dbg;
 HostTimer globalTimer;
@@ -137,9 +139,12 @@ int main(int argc,char* argv[])
 
 	assert(non_tree_edges_map->size() == initial_spanning_tree->non_tree_edges->size());
 
+	cycle_storage *storage = new cycle_storage(reduced_graph->Nodes);
+
 	worker_thread **multi_work = new worker_thread*[num_threads];
+
 	for(int i=0;i<num_threads;i++)
-		multi_work[i] = new worker_thread(reduced_graph);
+		multi_work[i] = new worker_thread(reduced_graph,storage);
 
 	globalTimer.start_timer();
 
@@ -154,6 +159,9 @@ int main(int argc,char* argv[])
 		count_cycles += multi_work[threadId]->produce_sp_tree_and_cycles(i,reduced_graph);
 	}
 
+	for(int i=0;i<num_threads;i++)
+		storage->add_trees(multi_work[i]->shortest_path_trees);
+
 	localTime = globalTimer.get_event_time();
 	totalTime += localTime;
 
@@ -164,28 +172,45 @@ int main(int argc,char* argv[])
 	std::vector<cycle*> list_cycle_vec;
 	std::list<cycle*> list_cycle;
 
-	for(int i=0;i<num_threads;i++)
+	for(int j=0;j<storage->list_cycles.size();j++)
 	{
-		for(int j=0;j<multi_work[i]->list_cycles.size();j++)
-			list_cycle_vec.push_back(multi_work[i]->list_cycles[j]);
+		for(std::unordered_map<unsigned long long,list_common_cycles*>::iterator it = storage->list_cycles[j].begin();
+			it != storage->list_cycles[j].end(); it++)
+		{
+			for(int k=0;k<it->second->listed_cycles.size();k++)
+			{
+				list_cycle_vec.push_back(it->second->listed_cycles[k]);
+				list_cycle_vec.back()->ID = list_cycle_vec.size() - 1;
+			}
+		}
 	}
 
 	sort(list_cycle_vec.begin(),list_cycle_vec.end(),cycle::compare());
 
+	printf("Number of initial cycles = %d\n", list_cycle_vec.size());
+
+	isometric_cycle *isometric_cycle_helper = new isometric_cycle(list_cycle_vec.size(),storage,&list_cycle_vec);
+
+	isometric_cycle_helper->obtain_isometric_cycles();
+
+	delete isometric_cycle_helper;
+
 	for(int i=0; i<list_cycle_vec.size(); i++)
 	{
-		list_cycle.push_back(list_cycle_vec[i]);
+		if(list_cycle_vec[i] != NULL)
+			list_cycle.push_back(list_cycle_vec[i]);
+
 	}
+
+	printf("Number of isometric cycles  = %d\n", list_cycle.size());
 
 	list_cycle_vec.clear();
 
 
-	assert(list_cycle.size() == count_cycles);
-
 	localTime = globalTimer.get_event_time();
 	totalTime += localTime;
 
-	printf("Time to collect the circles = %lf",localTime);
+	printf("Time to collect the circles = %lf\n",localTime);
 
 	//At this stage we have the shortest path trees and the cycles sorted in increasing order of length.
 

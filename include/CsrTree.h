@@ -14,6 +14,8 @@ public:
 	std::vector<unsigned> *non_tree_edges = NULL;
 	std::vector<unsigned> *node_pre_compute;
 	std::vector<int> *parent_edges;
+	std::vector<unsigned> *s_values;
+	std::vector<int> *distance;
 
 	struct compare
 	{
@@ -36,6 +38,11 @@ public:
 		assert (parent_graph->rowOffsets->size() == parent_graph->Nodes + 1);
 	}
 
+	~csr_tree()
+	{
+		
+	}
+
 	void populate_tree_edges(bool populate_non_tree_edges,int &src)
 	{
 		if(populate_non_tree_edges)
@@ -46,6 +53,34 @@ public:
 		tree_edges = parent_graph->get_spanning_tree(&non_tree_edges,src);
 
 		//std::sort(non_tree_edges->begin(),non_tree_edges->end(),compare(parent_graph));
+	}
+
+	void compute_s_values(std::vector<int> &parent)
+	{
+		assert(tree_edges != NULL);
+		assert(!parent.empty());
+
+		s_values = new std::vector<unsigned>(parent_graph->Nodes);
+
+		unsigned edge_offset,row,col;
+
+		for(int i=0;i<tree_edges->size();i++)
+		{
+			edge_offset = tree_edges->at(i);
+			row = parent_graph->rows->at(edge_offset);
+			col = parent_graph->columns->at(edge_offset);
+
+			s_values->at(root) = root;
+
+			if(row == root)
+			{
+				s_values->at(col) = col;
+			}
+			else
+			{
+				s_values->at(col) = s_values->at(row);
+			}
+		}
 	}
 
 	void obtain_shortest_path_tree(dijkstra &helper,bool populate_non_tree_edges,int src)
@@ -63,6 +98,11 @@ public:
 
 		for(int i=0;i< helper.edge_offsets.size();i++)
 		 	parent_edges->push_back(helper.edge_offsets[i]);
+
+		distance = new std::vector<int>();
+
+		for(int i=0;i < helper.distance.size();i++)
+			distance->push_back(helper.distance[i]);
 	}
 
 	void remove_non_tree_edges()
