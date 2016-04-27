@@ -70,6 +70,7 @@ int main(int argc,char* argv[])
 	csr_graph *graph=new csr_graph();
 
 	graph->Nodes = nodes;
+	graph->initial_edge_count = edges;
 	/*
 	 * ====================================================================================
 	 * Fill Edges.
@@ -96,6 +97,9 @@ int main(int argc,char* argv[])
 	initial_spanning_tree->populate_tree_edges(true,source_vertex);
 
 	int num_non_tree_edges = initial_spanning_tree->non_tree_edges->size();
+
+	assert(num_non_tree_edges == edges - nodes + 1);
+	assert(graph->get_total_weight() == reduced_graph->get_total_weight());
 
 	std::unordered_map<unsigned,unsigned> *non_tree_edges_map = new std::unordered_map<unsigned,unsigned>();
 	

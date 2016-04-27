@@ -38,6 +38,7 @@ class csr_graph
 public:
 
 	int Nodes;
+	int initial_edge_count;
 
 	std::vector<unsigned> *rowOffsets;
 	std::vector<unsigned> *columns;
@@ -53,6 +54,25 @@ public:
 		rows       = new std::vector<unsigned>();
 		degree     = new std::vector<unsigned>();
 		weights    = new std::vector<int>();
+	}
+
+	int get_num_degree_two_vertices()
+	{
+		int num = 0;
+		for(int i=0;i<degree->size();i++)
+			if(degree->at(i) == 2)
+				num++;
+		return num;
+	}
+
+	int get_total_weight()
+	{
+		int total_weight = 0;
+
+		for(int i=0;i<rows->size();i++)
+				total_weight += weights->at(i);
+
+		return total_weight;
 	}
 
 
