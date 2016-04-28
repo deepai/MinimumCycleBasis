@@ -185,7 +185,7 @@ int main(int argc,char* argv[])
 	localTime = globalTimer.get_event_time();
 	totalTime += localTime;
 
-	printf("Time to collect the circles = %lf",localTime);
+	printf("Time to collect the circles = %lf\n",localTime);
 
 	//At this stage we have the shortest path trees and the cycles sorted in increasing order of length.
 
