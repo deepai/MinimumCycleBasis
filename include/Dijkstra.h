@@ -157,6 +157,9 @@ struct dijkstra
 		orig_row = row = graph->rows->at(edge_offset);
 		orig_col = col = graph->columns->at(edge_offset);
 
+		if(!(src <= row && src <= col))
+			return false;
+
 		while(level[row] != level[col])
 		{
 			if(level[row] < level[col])
@@ -186,6 +189,9 @@ struct dijkstra
 
 		row = graph->rows->at(edge_offset);
 		col = graph->columns->at(edge_offset);
+
+		if(!(src <= row && src <= col))
+			return false;
 
 		if(s_values[row] != s_values[col])
 		{
