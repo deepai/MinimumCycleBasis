@@ -27,6 +27,7 @@
 #include "work_per_thread.h"
 #include "cycle_searcher.h"
 #include "isometric_cycle.h"
+#include "stats.h"
 
 debugger dbg;
 HostTimer globalTimer;
@@ -37,12 +38,14 @@ std::string OutputFileDirectory;
 double totalTime = 0;
 double localTime = 0;
 
+stats info;
+
 int main(int argc,char* argv[])
 {
 	if(argc < 4)
 	{
 		printf("Ist Argument should indicate the InputFile\n");
-		printf("2nd Argument should indicate the outputdirectory\n");
+		printf("2nd Argument should indicate the OutputFile\n");
 		printf("3th argument should indicate the number of threads.(Optional) (1 default)\n");
 		exit(1);
 	}
@@ -117,7 +120,7 @@ int main(int argc,char* argv[])
 
 	assert(nodes_removed == graph->get_num_degree_two_vertices());
 
-	printf("Number of nodes removed = %d\n",nodes_removed);
+	info.setNumNodesRemoved(nodes_removed);
 
 	csr_multi_graph *reduced_graph = csr_multi_graph::get_modified_graph(graph,
 									     remove_edge_list,
@@ -165,7 +168,7 @@ int main(int argc,char* argv[])
 	localTime = globalTimer.get_event_time();
 	totalTime += localTime;
 
-	printf("Time to construct the trees = %lf\n",localTime);
+	info.setTimeConstructionTrees(localTime);
 
 	globalTimer.start_timer();
 
@@ -187,7 +190,7 @@ int main(int argc,char* argv[])
 
 	sort(list_cycle_vec.begin(),list_cycle_vec.end(),cycle::compare());
 
-	printf("Number of initial cycles = %d\n", list_cycle_vec.size());
+	info.setNumInitialCycles(list_cycle_vec.size());
 
 	isometric_cycle *isometric_cycle_helper = new isometric_cycle(list_cycle_vec.size(),storage,&list_cycle_vec);
 
@@ -202,7 +205,7 @@ int main(int argc,char* argv[])
 
 	}
 
-	printf("Number of isometric cycles  = %d\n", list_cycle.size());
+	info.setNumIsometricCycles(list_cycle.size());
 
 	list_cycle_vec.clear();
 
@@ -210,7 +213,7 @@ int main(int argc,char* argv[])
 	localTime = globalTimer.get_event_time();
 	totalTime += localTime;
 
-	printf("Time to collect the circles = %lf\n",localTime);
+	info.setTimeCollectCycles(localTime);
 
 	//At this stage we have the shortest path trees and the cycles sorted in increasing order of length.
 
@@ -296,10 +299,10 @@ int main(int argc,char* argv[])
 
 	list_cycle.clear();
 
-	printf("Total time for the loop = %lf\n",precompute_time + cycle_inspection_time + independence_test_time);
-	printf("precompute_time = %lf\n",precompute_time);
-	printf("cycle_inspection_time = %lf\n",cycle_inspection_time);
-	printf("independence_test_time = %lf\n",independence_test_time);
+	info.setPrecomputeShortestPathTime(precompute_time);
+	info.setCycleInspectionTime(cycle_inspection_time);
+	info.setIndependenceTestTime(independence_test_time);
+	info.setTotalTime();
 
 	int total_weight = 0;
 
@@ -308,8 +311,10 @@ int main(int argc,char* argv[])
 		total_weight +=  final_mcb[i]->total_length;
 	}
 
-	printf("Number of Cycles = %d\n",final_mcb.size());
-	printf("Total Weight = %d\n",total_weight);
+	info.setNumFinalCycles(final_mcb.size());
+	info.setTotalWeight(total_weight);
+
+	info.print_stats(argv[2]);
 
 	return 0;
 }
