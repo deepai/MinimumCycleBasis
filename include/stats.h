@@ -75,11 +75,11 @@ struct stats
 	}
 
 	void stats::setTotalTime(double totalTime = 0) {
-		total_time = totalTime;
+		total_time = precompute_shortest_path_time + independence_test_time + cycle_inspection_time;
 	}
 
 	void stats::setTotalWeight(int totalWeight) {
-		total_weight = precompute_shortest_path_time + independence_test_time + cycle_inspection_time;
+		total_weight = totalWeight;
 	}
 
 
