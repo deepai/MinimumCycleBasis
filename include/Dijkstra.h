@@ -166,12 +166,21 @@ struct dijkstra
 				col = parent[col];
 			else
 				row = parent[row];
+
+			if((row < src) || (col < src))
+				return false;
 		}
+
+		if((row < src) || (col < src))
+				return false;
 
 		while(row != col)
 		{
 			row = parent[row];
 			col = parent[col];
+
+			if((row < src) || (col < src))
+				return false;
 		}
 
 		if( row == src )

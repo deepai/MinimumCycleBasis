@@ -54,20 +54,9 @@ struct worker_thread
 
 		for(int i=0;i<non_tree_edges->size();i++)
 		{
-			is_edge_cycle = helper->is_edge_cycle_using_s_values(*(sp_tree->s_values),non_tree_edges->at(i),
-				total_weight,src);
-
-			#ifndef NDEBUG
-				temp_check = helper->is_edge_cycle(non_tree_edges->at(i),temp_weight,src);
-
-				if(!((temp_check == is_edge_cycle) && (temp_weight == total_weight)))
-				{
-					printf("root = %d , edge = %d - %d\n",src + 1,helper->graph->rows->at(non_tree_edges->at(i)) + 1,
-						helper->graph->columns->at(non_tree_edges->at(i)) + 1);
-				}
-
-				assert((temp_check == is_edge_cycle) && (temp_weight == total_weight));
-			#endif
+			total_weight = 0;
+			
+			is_edge_cycle = helper->is_edge_cycle(non_tree_edges->at(i),total_weight,src);
 
 			if(is_edge_cycle)
 			{
