@@ -87,7 +87,7 @@ struct stats
 	{
 		FILE *fout = fopen(output_file,"a");
 
-		fprintf(fout,"%5d %5d %5d %5d %5d %15lf %15lf %15lf %15lf %15lf %15lf %15lf\n",num_nodes_removed,
+		fprintf(fout,"%5d %5d %5d %5d %5d %15lf %15lf %15lf %15lf %15lf %15lf\n",num_nodes_removed,
 																								num_initial_cycles,
 																								num_isometric_cycles,
 																								num_final_cycles,
@@ -95,6 +95,7 @@ struct stats
 																								time_construction_trees,
 																								time_collect_cycles,
 																								cycle_inspection_time,
+																								precompute_shortest_path_time,
 																								independence_test_time,
 																								total_time);
 
