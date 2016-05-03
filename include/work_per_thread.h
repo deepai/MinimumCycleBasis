@@ -6,6 +6,7 @@
 #include "cycles.h"
 #include "Dijkstra.h"
 #include "bit_vector.h"
+#include "cycle_searcher.h"
 
 #include <unordered_map>
 #include <assert.h>
@@ -14,18 +15,18 @@
 struct worker_thread
 {
 	std::vector<csr_tree*> shortest_path_trees;
-	std::vector<cycle*> list_cycles;
 	dijkstra *helper;
+	cycle_storage *storage;
 
-	worker_thread(csr_multi_graph *graph)
+	worker_thread(csr_multi_graph *graph,cycle_storage *s)
 	{
 		helper = new dijkstra(graph->Nodes,graph);
+		storage = s;
 	}
 
 	~worker_thread()
 	{
 		shortest_path_trees.clear();
-		list_cycles.clear();
 		delete helper;
 	}
 
@@ -71,8 +72,12 @@ struct worker_thread
 			if(is_edge_cycle)
 			{
 				cycle *cle = new cycle(sp_tree,non_tree_edges->at(i));
+
 				cle->total_length = total_weight;
-				list_cycles.push_back(cle);
+				
+				storage->add_cycle(src,helper->graph->rows->at(non_tree_edges->at(i)),
+					helper->graph->columns->at(non_tree_edges->at(i)),cle);
+
 				count_cycle++;
 			}
 		}
@@ -86,7 +91,7 @@ struct worker_thread
 
 	void empty_cycles()
 	{
-		list_cycles.clear();
+		storage->clear_cycles();
 	}
 
 	void precompute_supportVec(std::unordered_map<unsigned,unsigned> &non_tree_edge_map,bit_vector &vector)

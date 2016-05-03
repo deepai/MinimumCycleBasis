@@ -4,12 +4,15 @@
 #include "bit_vector.h"
 #include <unordered_map>
 #include <assert.h>
+#include <set>
 
 struct cycle
 {
 	csr_tree *tree;
 	unsigned non_tree_edge_index;
 	int total_length;
+
+	int ID;
 
 	bool operator<(const cycle &rhs) const
 	{
@@ -34,6 +37,42 @@ struct cycle
 	{
 		return tree->root;
 	}
+
+	std::set<unsigned> *get_edges()
+	{
+		std::set<unsigned> *edges = new std::set<unsigned>();
+
+		csr_multi_graph *parent_graph = tree->parent_graph;
+
+		unsigned row = parent_graph->rows->at(non_tree_edge_index);
+		unsigned col = parent_graph->columns->at(non_tree_edge_index);
+
+		while(row != tree->root)
+		{
+			unsigned edge_offset = tree->parent_edges->at(row);
+			unsigned reverse_edge_offset = parent_graph->reverse_edge->at(edge_offset);
+
+			edges->insert(std::min(edge_offset,reverse_edge_offset));
+
+			row = parent_graph->rows->at(edge_offset);
+		}
+
+		while(col != tree->root)
+		{
+			unsigned edge_offset = tree->parent_edges->at(col);
+			unsigned reverse_edge_offset = parent_graph->reverse_edge->at(edge_offset);
+
+			edges->insert(std::min(edge_offset,reverse_edge_offset));
+
+			col = parent_graph->rows->at(edge_offset);
+		}
+
+		edges->insert(std::min(non_tree_edge_index,parent_graph->reverse_edge->at(non_tree_edge_index)));
+
+		return edges;
+	}
+
+
 
 	/**
 	 * @brief This method returns a bit_vector corresponding to the edges of the cycle.
@@ -112,6 +151,12 @@ struct cycle
 				 tree->parent_graph->columns->at(non_tree_edge_index) + 1);
 		printf("Total weight = %d\n",total_length);
 		printf("=================================================================================\n");
+	}
+
+	void print_line()
+	{
+		printf("{%u,(%u - %u)} ",tree->root + 1,tree->parent_graph->rows->at(non_tree_edge_index) + 1,
+			tree->parent_graph->columns->at(non_tree_edge_index) + 1);
 	}
 
 };

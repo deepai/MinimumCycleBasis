@@ -15,6 +15,8 @@ public:
 	std::vector<unsigned> *node_pre_compute;
 	std::vector<int> *parent_edges;
 	std::vector<unsigned> *s_values;
+	std::vector<int> *distance;
+
 
 	struct compare
 	{
@@ -35,6 +37,11 @@ public:
 		assert (parent_graph != NULL);
 		assert (parent_graph->rows->size() == parent_graph->columns->size());
 		assert (parent_graph->rowOffsets->size() == parent_graph->Nodes + 1);
+	}
+
+	~csr_tree()
+	{
+		
 	}
 
 	void populate_tree_edges(bool populate_non_tree_edges,int &src)
@@ -92,6 +99,11 @@ public:
 
 		for(int i=0;i< helper.edge_offsets.size();i++)
 		 	parent_edges->push_back(helper.edge_offsets[i]);
+
+		distance = new std::vector<int>();
+
+		for(int i=0;i < helper.distance.size();i++)
+			distance->push_back(helper.distance[i]);
 	}
 
 	void remove_non_tree_edges()
