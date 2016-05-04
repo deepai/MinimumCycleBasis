@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <cstdio>
+#include <unistd.h>
 
 struct stats
 {
@@ -85,9 +86,22 @@ struct stats
 
 	void print_stats(char *output_file)
 	{
+		bool file_exist = false;
+
+		if( access( output_file, F_OK ) != -1 ) {
+    		file_exist = true;
+		} else {
+    		file_exist = false;
+		}
+
 		FILE *fout = fopen(output_file,"a");
 
-		fprintf(fout,"%5d %5d %5d %5d %5d %15lf %15lf %15lf %15lf %15lf %15lf\n",num_nodes_removed,
+		if(!file_exist)
+		{
+			fprintf(fout,"Nodes Removed,Initial Cycles,Isometric_cycles,final_cycles,Total_Weight,construction_trees(s),collect_cycles(s),inspection_time(s),precompute_shortest_path(s),independence_test(s),total_time(s)\n");
+		}
+
+		fprintf(fout,"%5d,%5d,%5d,%5d,%5d,%15lf,%15lf,%15lf,%15lf,%15lf,%15lf\n",num_nodes_removed,
 																								num_initial_cycles,
 																								num_isometric_cycles,
 																								num_final_cycles,
