@@ -85,6 +85,12 @@ int main(int argc,char* argv[])
 
 	Reader.fileClose();
 
+	if(graph->get_num_degree_two_vertices() == graph->Nodes)
+	{
+		printf("Graph is a cycle\n");		
+		return 0;
+	}
+
 	int source_vertex = 0;
 
 	csr_multi_graph *reduced_graph = csr_multi_graph::get_modified_graph(graph,

@@ -92,6 +92,16 @@ int main(int argc,char* argv[])
 
 	Reader.fileClose();
 
+	if(graph->get_num_degree_two_vertices() == graph->Nodes)
+	{
+		info.setNumFinalCycles(1);
+		info.setNumInitialCycles(1);
+		info.setTotalWeight(graph->get_total_weight());
+		info.print_stats(argv[2]);
+		
+		return 0;
+	}
+
 	std::vector<std::vector<unsigned> > *chains = new std::vector<std::vector<unsigned> >();
 
 	int source_vertex;
