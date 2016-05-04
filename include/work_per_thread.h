@@ -8,6 +8,7 @@
 #include "bit_vector.h"
 #include "cycle_searcher.h"
 
+#include <utility>
 #include <unordered_map>
 #include <assert.h>
 
@@ -83,10 +84,10 @@ struct worker_thread
 		storage->clear_cycles();
 	}
 
-	void precompute_supportVec(std::unordered_map<unsigned,unsigned> &non_tree_edge_map,bit_vector &vector)
+	void precompute_supportVec(std::vector<std::pair<bool,int>> &non_tree_edges,bit_vector &vector)
 	{
-		assert(non_tree_edge_map.size() == vector.get_num_elements());
-		assert(vector.get_size() == (int)(ceil((double)non_tree_edge_map.size()/64)));
+		//assert(non_tree_edge_map.size() == vector.get_num_elements());
+		//assert(vector.get_size() == (int)(ceil((double)non_tree_edge_map.size()/64)));
 
 		for(int i=0;i<shortest_path_trees.size();i++)
 		{
@@ -103,19 +104,16 @@ struct worker_thread
 			for(int i=0;i<tree_edges->size();i++)
 			{
 				edge_offset = tree_edges->at(i);
-				reverse_edge = graph->reverse_edge->at(edge_offset);
+				
 				row = graph->rows->at(edge_offset);
 				column = graph->columns->at(edge_offset);
 
+				std::pair<bool,int> &edge = non_tree_edges[edge_offset];
+
 				//non_tree_edge
-				if(non_tree_edge_map.find(edge_offset) != non_tree_edge_map.end())
+				if(edge.first)
 				{
-					bit = vector.get_bit(non_tree_edge_map.at(edge_offset));
-					precompute_nodes->at(column) = (precompute_nodes->at(row) + bit)%2;
-				}
-				else if(non_tree_edge_map.find(reverse_edge) != non_tree_edge_map.end())
-				{
-					bit = vector.get_bit(non_tree_edge_map.at(reverse_edge));
+					bit = vector.get_bit(edge.second);
 					precompute_nodes->at(column) = (precompute_nodes->at(row) + bit)%2;
 				}
 				else //tree edge

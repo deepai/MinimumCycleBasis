@@ -15,6 +15,7 @@
 #include <cstring>
 #include <unordered_set>
 #include <unordered_map>
+#include <utility>
 
 #include "FileReader.h"
 #include "Files.h"
@@ -135,12 +136,26 @@ int main(int argc,char* argv[])
 	assert(num_non_tree_edges == edges - nodes + 1);
 	assert(graph->get_total_weight() == reduced_graph->get_total_weight());
 
-	std::unordered_map<unsigned,unsigned> *non_tree_edges_map = new std::unordered_map<unsigned,unsigned>();
+	std::vector<std::pair<bool,int>> non_tree_edges_map(reduced_graph->rows->size());
 	
 	for(int i=0;i<initial_spanning_tree->non_tree_edges->size();i++)
-		non_tree_edges_map->insert(std::make_pair(initial_spanning_tree->non_tree_edges->at(i),i));
+	{
+		non_tree_edges_map[initial_spanning_tree->non_tree_edges->at(i)].first = true;
+		non_tree_edges_map[initial_spanning_tree->non_tree_edges->at(i)].second = i;
+	}
 
-	assert(non_tree_edges_map->size() == initial_spanning_tree->non_tree_edges->size());
+	for(int i=0;i<reduced_graph->rows->size();i++)
+	{
+		//copy the edges into the reverse edges as well.
+		if(!non_tree_edges_map[i].first)
+		{
+			if(non_tree_edges_map[reduced_graph->reverse_edge->at(i)].first)
+			{
+				non_tree_edges_map[i].first = true;
+				non_tree_edges_map[i].second = non_tree_edges_map[reduced_graph->reverse_edge->at(i)].second;
+			}
+		}
+	}
 
 	cycle_storage *storage = new cycle_storage(reduced_graph->Nodes);
 
@@ -239,7 +254,7 @@ int main(int argc,char* argv[])
 		#pragma omp parallel for
 		for(int i=0;i<num_threads;i++)
 		{
-			multi_work[i]->precompute_supportVec(*non_tree_edges_map,*support_vectors[e]);
+			multi_work[i]->precompute_supportVec(non_tree_edges_map,*support_vectors[e]);
 		}
 
 		precompute_time += globalTimer.get_event_time();
@@ -251,20 +266,17 @@ int main(int argc,char* argv[])
 		{
 			
 			unsigned normal_edge = (*cycle)->non_tree_edge_index;
-			unsigned reverse_edge = reduced_graph->reverse_edge->at(normal_edge);
 			unsigned bit_val = 0;
 
 			unsigned row,col;
 			row = reduced_graph->rows->at(normal_edge);
 			col = reduced_graph->columns->at(normal_edge);
 
-			if(non_tree_edges_map->find(reverse_edge) != non_tree_edges_map->end())
+			std::pair<bool,int> &edge = non_tree_edges_map[normal_edge];
+
+			if(edge.first)
 			{
-				bit_val = support_vectors[e]->get_bit(non_tree_edges_map->at(reverse_edge));
-			}
-			else if(non_tree_edges_map->find(normal_edge) != non_tree_edges_map->end())
-			{
-				bit_val = support_vectors[e]->get_bit(non_tree_edges_map->at(normal_edge));
+				bit_val = support_vectors[e]->get_bit(edge.second);
 			}
 
 			bit_val = (bit_val + (*cycle)->tree->node_pre_compute->at(row))%2;
@@ -279,12 +291,11 @@ int main(int argc,char* argv[])
 			}
 		}
 
-
-
 		cycle_inspection_time += globalTimer.get_event_time();
 		globalTimer.start_timer();
 
-		bit_vector *cycle_vector = final_mcb.back()->get_cycle_vector(*non_tree_edges_map);
+		bit_vector *cycle_vector = final_mcb.back()->get_cycle_vector(non_tree_edges_map,
+																	  initial_spanning_tree->non_tree_edges->size());
 
 		for(int j=e+1;j<num_non_tree_edges;j++)
 		{
