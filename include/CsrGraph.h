@@ -72,7 +72,7 @@ public:
 		for(int i=0;i<rows->size();i++)
 				total_weight += weights->at(i);
 
-		return total_weight;
+		return (total_weight/2);
 	}
 
 

@@ -85,6 +85,12 @@ int main(int argc,char* argv[])
 
 	Reader.fileClose();
 
+	if(graph->get_num_degree_two_vertices() == graph->Nodes)
+	{
+		printf("Graph is a cycle\n");		
+		return 0;
+	}
+
 	std::vector<std::vector<unsigned> > *chains = new std::vector<std::vector<unsigned> >();
 
 	debug("Input File Reading Complete...\n");
