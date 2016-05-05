@@ -121,7 +121,7 @@ public:
 
 		for(int i=0;i<size;i++)
 		{
-			val = (val + get_and_numbers(elements[i],vector1->elements[i])) % 2;
+			val = val ^ get_and_numbers(elements[i],vector1->elements[i]);
 		}
 
 		return val;
