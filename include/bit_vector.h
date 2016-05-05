@@ -57,9 +57,11 @@ public:
 
 		while(temp != 0)
 		{
-			result = (result + (temp&1)) % 2;
-			temp >>= 1;
+			temp -= (temp & -temp);
+			count++;
 		}
+
+		result = count%2;
 
 		return result;
 	}
