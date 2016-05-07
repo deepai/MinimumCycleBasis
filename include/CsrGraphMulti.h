@@ -54,6 +54,30 @@ public:
 		edge_original_graph->clear();
 	}
 
+	void copy(const csr_multi_graph& other)
+    {
+        this->Nodes = other.Nodes;
+        this->initial_edge_count = other.initial_edge_count;
+
+        for(int i=0;i<other.rows->size();i++)
+        {
+			this->rows->push_back(other.rows->at(i));
+			this->columns->push_back(other.columns->at(i));
+			this->weights->push_back(other.weights->at(i));
+			this->reverse_edge->push_back(other.reverse_edge->at(i));
+        }
+
+        for(int i=0;i<Nodes;i++)
+        {
+			this->degree->push_back(other.degree->at(i));
+        }
+
+        for(int i=0;i<other.rowOffsets->size();i++)
+			this->rowOffsets->push_back(other.rowOffsets->at(i));
+
+		return;
+    }
+
 	void insert(int a,int b,int wt,int chain_index,int edge_index,bool direction)
 	{
 		columns->push_back(b);
@@ -120,7 +144,6 @@ public:
 			delete combined[i];
 
 		combined.clear();
-
 		//Now calculate the row_offset
 
 		for(int i=0;i<rows->size();i++)

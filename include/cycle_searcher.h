@@ -96,6 +96,9 @@ struct cycle_storage
 	{
 		Nodes = N;
 		list_cycles.resize(Nodes);
+		list_trees.resize(Nodes);
+		for(int i=0;i<Nodes;i++)
+			list_trees[i] = NULL;
 	}
 
 	~cycle_storage()
@@ -131,6 +134,8 @@ struct cycle_storage
 
 	std::vector<unsigned>* get_s_value(unsigned root)
 	{
+		if(list_trees[root] == NULL)
+			return NULL;
 		return list_trees[root]->s_values;
 	}
 
@@ -138,8 +143,8 @@ struct cycle_storage
 	{
 		for(int i=0;i<list_of_trees.size();i++)
 		{
-			list_trees.push_back(list_of_trees[i]);
-			assert(list_trees[list_trees.size() - 1]->root == list_trees.size() - 1);
+			int root = list_of_trees[i]->root;
+			list_trees[root] = list_of_trees[i];
 		}
 	}
 

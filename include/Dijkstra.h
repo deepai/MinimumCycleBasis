@@ -17,6 +17,8 @@ struct dijkstra
 
 	csr_multi_graph *graph;
 
+	bool *fvs_array;
+
 	struct Compare
 	{
 		bool operator()(std::pair<int,int> &a,std::pair<int,int> &b)
@@ -26,7 +28,7 @@ struct dijkstra
 	};
 	std::priority_queue<std::pair<int,int>,std::vector<std::pair<int,int>>,Compare> pq; 
 
-	dijkstra(int nodes,csr_multi_graph *input_graph)
+	dijkstra(int nodes,csr_multi_graph *input_graph,bool *fvs_array)
 	{
 		Nodes = nodes;
 		graph = input_graph;
@@ -35,6 +37,8 @@ struct dijkstra
 		parent.resize(nodes);
 		level.resize(nodes);
 		edge_offsets.resize(nodes);
+
+		this->fvs_array = fvs_array;
 
 		for(int i=0;i<nodes;i++)
 			distance[i] = -1;
@@ -157,7 +161,10 @@ struct dijkstra
 		orig_row = row = graph->rows->at(edge_offset);
 		orig_col = col = graph->columns->at(edge_offset);
 
-		if(!(src <= row && src <= col))
+		if(fvs_array[row] && (src > row))
+			return false;
+
+		if(fvs_array[col] && (src > col))
 			return false;
 
 		while(level[row] != level[col])
@@ -167,19 +174,28 @@ struct dijkstra
 			else
 				row = parent[row];
 
-			if((row < src) || (col < src))
+			if(fvs_array[row] && (src > row))
+				return false;
+
+			if(fvs_array[col] && (src > col))
 				return false;
 		}
 
-		if((row < src) || (col < src))
-				return false;
+		if(fvs_array[row] && (src > row))
+			return false;
+
+		if(fvs_array[col] && (src > col))
+			return false;
 
 		while(row != col)
 		{
 			row = parent[row];
 			col = parent[col];
 
-			if((row < src) || (col < src))
+			if(fvs_array[row] && (src > row))
+				return false;
+
+			if(fvs_array[col] && (src > col))
 				return false;
 		}
 

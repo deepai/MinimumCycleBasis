@@ -26,6 +26,7 @@
 #include "work_per_thread.h"
 #include "cycle_searcher.h"
 #include "isometric_cycle.h"
+#include "FVS.h"
 
 debugger dbg;
 HostTimer globalTimer;
@@ -103,6 +104,14 @@ int main(int argc,char* argv[])
 
 	reduced_graph->print_graph();
 
+	FVS fvs_helper(reduced_graph);
+
+	fvs_helper.MGA();
+
+	fvs_helper.print_fvs();
+
+	bool *fvs_array = fvs_helper.get_copy_fvs_array();
+
 	csr_tree *initial_spanning_tree = new csr_tree(reduced_graph);
 	initial_spanning_tree->populate_tree_edges(true,source_vertex);
 
@@ -146,7 +155,7 @@ int main(int argc,char* argv[])
 	worker_thread **multi_work = new worker_thread*[num_threads];
 
 	for(int i=0;i<num_threads;i++)
-		multi_work[i] = new worker_thread(reduced_graph,storage);
+		multi_work[i] = new worker_thread(reduced_graph,storage,fvs_array);
 
 	int count_cycles = 0;
 
@@ -155,7 +164,9 @@ int main(int argc,char* argv[])
 	for(int i = 0; i < reduced_graph->Nodes; i++)
 	{
 		int threadId = omp_get_thread_num();
-		count_cycles += multi_work[threadId]->produce_sp_tree_and_cycles(i,reduced_graph);
+
+		if(fvs_array[i])
+			count_cycles += multi_work[threadId]->produce_sp_tree_and_cycles(i,reduced_graph);
 	}
 
 	for(int i=0;i<num_threads;i++)
@@ -191,11 +202,11 @@ int main(int argc,char* argv[])
 
 	printf("\n\n");
 
-	isometric_cycle *isometric_cycle_helper = new isometric_cycle(list_cycle_vec.size(),storage,&list_cycle_vec);
+	//isometric_cycle *isometric_cycle_helper = new isometric_cycle(list_cycle_vec.size(),storage,&list_cycle_vec);
 
-	isometric_cycle_helper->obtain_isometric_cycles();
+	//isometric_cycle_helper->obtain_isometric_cycles();
 
-	delete isometric_cycle_helper;
+	//delete isometric_cycle_helper;
 
 
 	for(int i=0; i<list_cycle_vec.size(); i++)
@@ -306,6 +317,8 @@ int main(int argc,char* argv[])
 	}
 
 	printf("Total Weight = %d\n",total_weight);
+
+	delete[] fvs_array;
 
 	return 0;
 }

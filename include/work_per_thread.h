@@ -18,11 +18,13 @@ struct worker_thread
 	std::vector<csr_tree*> shortest_path_trees;
 	dijkstra *helper;
 	cycle_storage *storage;
+	bool *fvs_array;
 
-	worker_thread(csr_multi_graph *graph,cycle_storage *s)
+	worker_thread(csr_multi_graph *graph,cycle_storage *s,bool *fvs_array)
 	{
-		helper = new dijkstra(graph->Nodes,graph);
+		helper = new dijkstra(graph->Nodes,graph,fvs_array);
 		storage = s;
+		this->fvs_array = fvs_array;
 	}
 
 	~worker_thread()
