@@ -10,6 +10,9 @@ struct stats
 	int num_nodes_removed;
 	int num_initial_cycles;
 	int num_isometric_cycles;
+	int num_nodes;
+
+	int num_fvs = 0;
 
 	int num_final_cycles;
 	int total_weight;
@@ -30,6 +33,9 @@ struct stats
 		num_final_cycles = 0;
 		total_weight = 0;
 
+		num_fvs = 0;
+		num_nodes = 0;
+
 		time_construction_trees = 0;
 		time_collect_cycles = 0;
 		precompute_shortest_path_time = 0;
@@ -37,6 +43,16 @@ struct stats
 		independence_test_time = 0;
 
 		total_time = 0;
+	}
+
+	void stats::setNumNodesTotal(int num_nodes_total)
+	{
+		num_nodes = num_nodes_total;
+	}
+
+	void stats::setCycleNumFVS(int numfvs)
+	{
+		num_fvs = numfvs;
 	}
 
 	void stats::setCycleInspectionTime(double cycleInspectionTime) {
@@ -98,10 +114,12 @@ struct stats
 
 		if(!file_exist)
 		{
-			fprintf(fout,"Nodes Removed,Initial Cycles,Isometric_cycles,final_cycles,Total_Weight,construction_trees(s),collect_cycles(s),inspection_time(s),precompute_shortest_path(s),independence_test(s),total_time(s)\n");
+			fprintf(fout,"Nodes Removed,FVS size,Total_Vertices_Removed,Initial Cycles,Isometric_cycles,final_cycles,Total_Weight,construction_trees(s),collect_cycles(s),inspection_time(s),precompute_shortest_path(s),independence_test(s),total_time(s)\n");
 		}
 
-		fprintf(fout,"%5d,%5d,%5d,%5d,%5d,%15lf,%15lf,%15lf,%15lf,%15lf,%15lf\n",num_nodes_removed,
+		fprintf(fout,"%5d,%5d,%5d,%5d,%5d,%5d,%5d,%15lf,%15lf,%15lf,%15lf,%15lf,%15lf\n",num_nodes_removed,
+																								num_fvs,
+																								num_nodes + num_nodes_removed - num_fvs,
 																								num_initial_cycles,
 																								num_isometric_cycles,
 																								num_final_cycles,

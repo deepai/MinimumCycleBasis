@@ -65,6 +65,7 @@ struct isometric_cycle
 		{
 			cycle *cle = list_cycles->at(i);
 
+			assert(storage->list_trees[cle->tree->root] != NULL);
 			assert(cle->ID < num_cycles);
 
 			std::vector<unsigned> *s_values = cle->tree->s_values;
@@ -100,9 +101,7 @@ struct isometric_cycle
 					std::vector<unsigned> *s_value_r1 = storage->get_s_value(r1);
 					std::vector<unsigned> *s_value_col =storage->get_s_value(col);
 
-					assert(s_value_r1 != NULL);
-
-					if(src == s_value_r1->at(col))
+					if((s_value_r1 != NULL) && (src == s_value_r1->at(col)))
 					{
 						cycle *match_cycle = storage->get_cycle(r1,row,col,cle,cle->non_tree_edge_index);
 						if(match_cycle != NULL)
@@ -117,7 +116,7 @@ struct isometric_cycle
 						#endif
 						}
 					}
-					else if(row == s_value_col->at(r1))
+					else if((s_value_col != NULL) && (row == s_value_col->at(r1)))
 					{
 						cycle *match_cycle = storage->get_cycle(col,src,r1,cle);
 						if(match_cycle != NULL)
@@ -141,6 +140,8 @@ struct isometric_cycle
 
 		for(int i=0;i<num_cycles;i++)
 		{
+			if(list_cycles->at(i) == NULL)
+				continue;
 			if(root[list_cycles->at(i)->ID] != list_cycles->at(i)->ID)
 			{
 				delete list_cycles->at(i);
