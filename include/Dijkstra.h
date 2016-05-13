@@ -17,7 +17,7 @@ struct dijkstra
 
 	csr_multi_graph *graph;
 
-	bool *fvs_array;
+	int *fvs_array;
 
 	struct Compare
 	{
@@ -28,7 +28,7 @@ struct dijkstra
 	};
 	std::priority_queue<std::pair<int,int>,std::vector<std::pair<int,int>>,Compare> pq; 
 
-	dijkstra(int nodes,csr_multi_graph *input_graph,bool *fvs_array)
+	dijkstra(int nodes,csr_multi_graph *input_graph,int *fvs_array)
 	{
 		Nodes = nodes;
 		graph = input_graph;
@@ -161,10 +161,10 @@ struct dijkstra
 		orig_row = row = graph->rows->at(edge_offset);
 		orig_col = col = graph->columns->at(edge_offset);
 
-		if(fvs_array[row] && (src > row))
+		if((fvs_array[row] >= 0) && (src > row))
 			return false;
 
-		if(fvs_array[col] && (src > col))
+		if((fvs_array[col] >= 0) && (src > col))
 			return false;
 
 		while(level[row] != level[col])
@@ -174,17 +174,17 @@ struct dijkstra
 			else
 				row = parent[row];
 
-			if(fvs_array[row] && (src > row))
+			if((fvs_array[row] >= 0) && (src > row))
 				return false;
 
-			if(fvs_array[col] && (src > col))
+			if((fvs_array[col] >= 0) && (src > col))
 				return false;
 		}
 
-		if(fvs_array[row] && (src > row))
+		if((fvs_array[row] >= 0) && (src > row))
 			return false;
 
-		if(fvs_array[col] && (src > col))
+		if((fvs_array[col] >= 0) && (src > col))
 			return false;
 
 		while(row != col)
@@ -192,10 +192,10 @@ struct dijkstra
 			row = parent[row];
 			col = parent[col];
 
-			if(fvs_array[row] && (src > row))
+			if((fvs_array[row] >= 0) && (src > row))
 				return false;
 
-			if(fvs_array[col] && (src > col))
+			if((fvs_array[col] >= 0) && (src > col))
 				return false;
 		}
 
@@ -206,32 +206,6 @@ struct dijkstra
 
 		return (row == src);
 	}
-
-	bool is_edge_cycle_using_s_values(std::vector<unsigned> &s_values,unsigned &edge_offset,int &total_weight,unsigned src)
-	{
-		unsigned row,col;
-		total_weight = 0;
-
-		row = graph->rows->at(edge_offset);
-		col = graph->columns->at(edge_offset);
-
-		if(!(src <= row && src <= col))
-			return false;
-
-		if(s_values[row] != s_values[col])
-		{
-			total_weight += distance[row] + distance[col] + graph->weights->at(edge_offset);
-			return true;
-		}
-		else if((s_values[row] == s_values[col]) && (s_values[row] == src))
-		{
-			total_weight += distance[row] + distance[col] + graph->weights->at(edge_offset);
-			return true;
-		}
-		else
-			return false;
-	}
-
 	void assert_correctness(unsigned src)
 	{
 		for(int i=0;i<graph->Nodes;i++)

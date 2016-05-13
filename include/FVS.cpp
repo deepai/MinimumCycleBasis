@@ -242,10 +242,16 @@ void FVS::MGA()
 	}
 }
 
-bool *FVS::get_copy_fvs_array()
+int *FVS::get_copy_fvs_array()
 {
-	bool *fvs_output_array = new bool[input_graph->Nodes];
-	memcpy(fvs_output_array,is_vtx_in_fvs,sizeof(bool)*input_graph->Nodes);
+	int *fvs_output_array = new int[input_graph->Nodes];
+
+	int count = 0;
+	for(int i=0;i<input_graph->Nodes;i++)
+		if(is_vtx_in_fvs[i])
+			fvs_output_array[i] = count++;
+		else
+			fvs_output_array[i] = -1;
 
 	return fvs_output_array;
 }

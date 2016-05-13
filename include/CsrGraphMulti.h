@@ -18,7 +18,7 @@ protected:
 		int original_edge_index;
 		int reverse_edge_index;
 
-		edge(unsigned &r,unsigned &c,int &w,int &ch_index,int &orig_index)
+		edge(unsigned r,unsigned c,int w,int ch_index,int orig_index)
 		{
 			row = r;
 			col = c;
@@ -174,6 +174,41 @@ public:
 			printf("row_offset size = %d,columns size = %d\n",rowOffsets->size(),columns->size());
 		#endif
 
+	}
+
+	void fill_tree_edges(unsigned *r,unsigned *c,unsigned *e,std::vector<unsigned> *tree_edges)
+	{
+		std::vector<edge*> temporary_array;
+		unsigned row,col;
+		for(int i=0;i<tree_edges->size();i++)
+		{
+			row = rows->at(tree_edges->at(i));
+			col = columns->at(tree_edges->at(i));
+
+			temporary_array.push_back(new edge(row,col,0,0,(int)tree_edges->at(i)));
+		}
+		sort(temporary_array.begin(),temporary_array.end(),compare());
+
+		for(int i=0;i<temporary_array.size();i++)
+		{
+			r[temporary_array[i]->row]++;
+			c[i] = temporary_array[i]->col;
+			e[i] = temporary_array[i]->original_edge_index;
+		}
+
+		unsigned prev = 0,current;
+
+		for(int i=0;i<=Nodes;i++)
+		{
+			current = r[i];
+			r[i] = prev;
+			prev += current;
+		}
+
+		for(int i=0;i<temporary_array.size();i++)
+			delete temporary_array[i];
+
+		temporary_array.clear();
 	}
 
 	std::vector<unsigned> *csr_multi_graph::get_spanning_tree(std::vector<unsigned> **non_tree_edges,
