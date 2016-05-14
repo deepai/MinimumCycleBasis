@@ -45,57 +45,57 @@ struct stats
 		total_time = 0;
 	}
 
-	void stats::setNumNodesTotal(int num_nodes_total)
+	void setNumNodesTotal(int num_nodes_total)
 	{
 		num_nodes = num_nodes_total;
 	}
 
-	void stats::setCycleNumFVS(int numfvs)
+	void setCycleNumFVS(int numfvs)
 	{
 		num_fvs = numfvs;
 	}
 
-	void stats::setCycleInspectionTime(double cycleInspectionTime) {
+	void setCycleInspectionTime(double cycleInspectionTime) {
 		cycle_inspection_time = cycleInspectionTime;
 	}
 
-	void stats::setIndependenceTestTime(double independenceTestTime) {
+	void setIndependenceTestTime(double independenceTestTime) {
 		independence_test_time = independenceTestTime;
 	}
 
-	void stats::setNumFinalCycles(int numFinalCycles) {
+	void setNumFinalCycles(int numFinalCycles) {
 		num_final_cycles = numFinalCycles;
 	}
 
-	void stats::setNumInitialCycles(int numInitialCycles) {
+	void setNumInitialCycles(int numInitialCycles) {
 		num_initial_cycles = numInitialCycles;
 	}
 
-	void stats::setNumIsometricCycles(int numIsometricCycles) {
+	void setNumIsometricCycles(int numIsometricCycles) {
 		num_isometric_cycles = numIsometricCycles;
 	}
 
-	void stats::setNumNodesRemoved(int numNodesRemoved) {
+	void setNumNodesRemoved(int numNodesRemoved) {
 		num_nodes_removed = numNodesRemoved;
 	}
 
-	void stats::setPrecomputeShortestPathTime(double precomputeShortestPathTime) {
+	void setPrecomputeShortestPathTime(double precomputeShortestPathTime) {
 		precompute_shortest_path_time = precomputeShortestPathTime;
 	}
 
-	void stats::setTimeCollectCycles(double timeCollectCycles) {
+	void setTimeCollectCycles(double timeCollectCycles) {
 		time_collect_cycles = timeCollectCycles;
 	}
 
-	void stats::setTimeConstructionTrees(double timeConstructionTrees) {
+	void setTimeConstructionTrees(double timeConstructionTrees) {
 		time_construction_trees = timeConstructionTrees;
 	}
 
-	void stats::setTotalTime(double totalTime = 0) {
+	void setTotalTime(double totalTime = 0) {
 		total_time = precompute_shortest_path_time + independence_test_time + cycle_inspection_time;
 	}
 
-	void stats::setTotalWeight(int totalWeight) {
+	void setTotalWeight(int totalWeight) {
 		total_weight = totalWeight;
 	}
 

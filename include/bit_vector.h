@@ -73,7 +73,7 @@ public:
 		return elements[index];
 	}
 
-	inline print_bits(unsigned long long val)
+	inline void print_bits(unsigned long long val)
 	{
 		std::stack<bool> bits;
 
