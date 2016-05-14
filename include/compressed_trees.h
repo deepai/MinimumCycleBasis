@@ -101,7 +101,7 @@ struct compressed_trees
 
 	int get_index(int original_node);
 
-	void compressed_trees::copy(int index,std::vector<unsigned> *tree_edges,
+	void copy(int index,std::vector<unsigned> *tree_edges,
 							std::vector<int> *parent_edges,std::vector<int> *distances);
 };
 

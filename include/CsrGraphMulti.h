@@ -211,7 +211,7 @@ public:
 		temporary_array.clear();
 	}
 
-	std::vector<unsigned> *csr_multi_graph::get_spanning_tree(std::vector<unsigned> **non_tree_edges,
+	std::vector<unsigned> *get_spanning_tree(std::vector<unsigned> **non_tree_edges,
 						    int src);
 
 	static csr_multi_graph *get_modified_graph(csr_graph *graph,
