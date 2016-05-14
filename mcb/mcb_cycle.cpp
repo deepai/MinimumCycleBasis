@@ -27,9 +27,9 @@
 #include "bit_vector.h"
 #include "work_per_thread.h"
 #include "cycle_searcher.h"
-#include "isometric_cycle.h"
 #include "stats.h"
 #include "FVS.h"
+#include "compressed_trees.h"
 
 debugger dbg;
 HostTimer globalTimer;
@@ -69,7 +69,7 @@ int main(int argc,char* argv[])
 
 	int v1,v2,Initial_Vertices,weight;;
 
-	int nodes,edges;
+	int nodes,edges,chunk_size = 1; //chunk size represents the number of rows of tree edges to be put together.
 
 	//firt line of the input file contains the number of nodes and edges
 	Reader.get_nodes_edges(nodes,edges); 
@@ -119,7 +119,7 @@ int main(int argc,char* argv[])
 
 	info.setCycleNumFVS(fvs_helper.get_num_elements());
 
-	bool *fvs_array = fvs_helper.get_copy_fvs_array();
+	int *fvs_array = fvs_helper.get_copy_fvs_array();
 
 	csr_tree *initial_spanning_tree = new csr_tree(reduced_graph);
 	initial_spanning_tree->populate_tree_edges(true,source_vertex);
@@ -129,51 +129,41 @@ int main(int argc,char* argv[])
 	assert(num_non_tree_edges == edges - nodes + 1);
 	assert(graph->get_total_weight() == reduced_graph->get_total_weight());
 
-	std::vector<std::pair<bool,int>> non_tree_edges_map(reduced_graph->rows->size());
+	std::vector<int> non_tree_edges_map(reduced_graph->rows->size());
+	std::fill(non_tree_edges_map.begin(),non_tree_edges_map.end(),-1);
 	
 	for(int i=0;i<initial_spanning_tree->non_tree_edges->size();i++)
-	{
-		non_tree_edges_map[initial_spanning_tree->non_tree_edges->at(i)].first = true;
-		non_tree_edges_map[initial_spanning_tree->non_tree_edges->at(i)].second = i;
-	}
+		non_tree_edges_map[initial_spanning_tree->non_tree_edges->at(i)] = i;
 
 	for(int i=0;i<reduced_graph->rows->size();i++)
 	{
 		//copy the edges into the reverse edges as well.
-		if(!non_tree_edges_map[i].first)
-		{
-			if(non_tree_edges_map[reduced_graph->reverse_edge->at(i)].first)
-			{
-				non_tree_edges_map[i].first = true;
-				non_tree_edges_map[i].second = non_tree_edges_map[reduced_graph->reverse_edge->at(i)].second;
-			}
-		}
+		if(non_tree_edges_map[i] < 0)
+			if(non_tree_edges_map[reduced_graph->reverse_edge->at(i)] >=0 )
+				non_tree_edges_map[i] = non_tree_edges_map[reduced_graph->reverse_edge->at(i)];
 	}
+
+	//construct the initial
+	compressed_trees trees(chunk_size,fvs_helper.get_num_elements(),fvs_array,reduced_graph);
 
 	cycle_storage *storage = new cycle_storage(reduced_graph->Nodes);
 
 	worker_thread **multi_work = new worker_thread*[num_threads];
 
 	for(int i=0;i<num_threads;i++)
-		multi_work[i] = new worker_thread(reduced_graph,storage,fvs_array);
+		multi_work[i] = new worker_thread(reduced_graph,storage,fvs_array,&trees);
 
 	globalTimer.start_timer();
 
 	//produce shortest path trees across all the nodes.
-
 	int count_cycles = 0;
 
 	#pragma omp parallel for reduction(+:count_cycles)
-	for(int i = 0; i < reduced_graph->Nodes; ++i)
+	for(int i = 0; i < trees.fvs_size; ++i)
 	{
 		int threadId = omp_get_thread_num();
-
-		if(fvs_array[i])
-			count_cycles += multi_work[threadId]->produce_sp_tree_and_cycles(i,reduced_graph);
+		count_cycles += multi_work[threadId]->produce_sp_tree_and_cycles(i,reduced_graph);
 	}
-
-	for(int i=0;i<num_threads;i++)
-		storage->add_trees(multi_work[i]->shortest_path_trees);
 
 	localTime = globalTimer.get_event_time();
 	totalTime += localTime;
@@ -202,12 +192,6 @@ int main(int argc,char* argv[])
 	sort(list_cycle_vec.begin(),list_cycle_vec.end(),cycle::compare());
 
 	info.setNumInitialCycles(list_cycle_vec.size());
-
-	//isometric_cycle *isometric_cycle_helper = new isometric_cycle(list_cycle_vec.size(),storage,&list_cycle_vec);
-
-	//isometric_cycle_helper->obtain_isometric_cycles();
-
-	//delete isometric_cycle_helper;
 
 	for(int i=0; i<list_cycle_vec.size(); i++)
 	{
@@ -257,29 +241,38 @@ int main(int argc,char* argv[])
 		precompute_time += globalTimer.get_event_time();
 		globalTimer.start_timer();
 
+		unsigned *node_rowoffsets,*node_columns,*precompute_nodes;
+		int *node_edgeoffsets,*node_parents,*node_distance;
+		unsigned src,edge_offset,reverse_edge,row,col,position,bit;
+
+		int src_index;
+
 
 		for(std::list<cycle*>::iterator cycle = list_cycle.begin();
 			cycle != list_cycle.end(); cycle++)
 		{
-			
-			unsigned normal_edge = (*cycle)->non_tree_edge_index;
-			unsigned bit_val = 0;
+			src = (*cycle)->get_root();
+			src_index = trees.vertices_map[src];
+
+			trees.get_node_arrays(&node_rowoffsets,&node_columns,&node_edgeoffsets,&node_parents,&node_distance,src_index);
+			trees.get_precompute_array(&precompute_nodes,src_index);
+
+			edge_offset = (*cycle)->non_tree_edge_index;
+			bit = 0;
 
 			unsigned row,col;
-			row = reduced_graph->rows->at(normal_edge);
-			col = reduced_graph->columns->at(normal_edge);
+			row = reduced_graph->rows->at(edge_offset);
+			col = reduced_graph->columns->at(edge_offset);
 
-			std::pair<bool,int> &edge = non_tree_edges_map[normal_edge];
-
-			if(edge.first)
+			if(non_tree_edges_map[edge_offset] >= 0)
 			{
-				bit_val = support_vectors[e]->get_bit(edge.second);
+				bit = support_vectors[e]->get_bit(non_tree_edges_map[edge_offset]);
 			}
 
-			bit_val = (bit_val + (*cycle)->tree->node_pre_compute->at(row))%2;
-			bit_val = (bit_val + (*cycle)->tree->node_pre_compute->at(col))%2;
+			bit = (bit + precompute_nodes[row])%2;
+			bit = (bit + precompute_nodes[col])%2;
 
-			if(bit_val == 1)
+			if(bit == 1)
 			{
 
 				final_mcb.push_back(*cycle);

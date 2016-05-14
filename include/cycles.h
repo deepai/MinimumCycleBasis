@@ -2,6 +2,8 @@
 #define __CYCLES_H
 
 #include "bit_vector.h"
+#include "compressed_trees.h"
+
 #include <unordered_map>
 #include <assert.h>
 #include <set>
@@ -9,7 +11,9 @@
 
 struct cycle
 {
-	csr_tree *tree;
+	compressed_trees *trees;
+
+	int root;
 	unsigned non_tree_edge_index;
 	int total_length;
 
@@ -28,50 +32,51 @@ struct cycle
 		}
 	};
 
-	cycle(csr_tree *tr, unsigned index)
+	cycle(compressed_trees *tr,int root,unsigned index)
 	{
-		tree = tr;
+		trees = tr;
 		non_tree_edge_index = index;
+		this->root = root;
 	}
 
 	unsigned get_root()
 	{
-		return tree->root;
+		return root;
 	}
 
-	std::set<unsigned> *get_edges()
-	{
-		std::set<unsigned> *edges = new std::set<unsigned>();
+	// std::set<unsigned> *get_edges()
+	// {
+	// 	std::set<unsigned> *edges = new std::set<unsigned>();
 
-		csr_multi_graph *parent_graph = tree->parent_graph;
+	// 	csr_multi_graph *parent_graph = tree->parent_graph;
 
-		unsigned row = parent_graph->rows->at(non_tree_edge_index);
-		unsigned col = parent_graph->columns->at(non_tree_edge_index);
+	// 	unsigned row = parent_graph->rows->at(non_tree_edge_index);
+	// 	unsigned col = parent_graph->columns->at(non_tree_edge_index);
 
-		while(row != tree->root)
-		{
-			unsigned edge_offset = tree->parent_edges->at(row);
-			unsigned reverse_edge_offset = parent_graph->reverse_edge->at(edge_offset);
+	// 	while(row != tree->root)
+	// 	{
+	// 		unsigned edge_offset = tree->parent_edges->at(row);
+	// 		unsigned reverse_edge_offset = parent_graph->reverse_edge->at(edge_offset);
 
-			edges->insert(std::min(edge_offset,reverse_edge_offset));
+	// 		edges->insert(std::min(edge_offset,reverse_edge_offset));
 
-			row = parent_graph->rows->at(edge_offset);
-		}
+	// 		row = parent_graph->rows->at(edge_offset);
+	// 	}
 
-		while(col != tree->root)
-		{
-			unsigned edge_offset = tree->parent_edges->at(col);
-			unsigned reverse_edge_offset = parent_graph->reverse_edge->at(edge_offset);
+	// 	while(col != tree->root)
+	// 	{
+	// 		unsigned edge_offset = tree->parent_edges->at(col);
+	// 		unsigned reverse_edge_offset = parent_graph->reverse_edge->at(edge_offset);
 
-			edges->insert(std::min(edge_offset,reverse_edge_offset));
+	// 		edges->insert(std::min(edge_offset,reverse_edge_offset));
 
-			col = parent_graph->rows->at(edge_offset);
-		}
+	// 		col = parent_graph->rows->at(edge_offset);
+	// 	}
 
-		edges->insert(std::min(non_tree_edge_index,parent_graph->reverse_edge->at(non_tree_edge_index)));
+	// 	edges->insert(std::min(non_tree_edge_index,parent_graph->reverse_edge->at(non_tree_edge_index)));
 
-		return edges;
-	}
+	// 	return edges;
+	// }
 
 
 
@@ -83,53 +88,52 @@ struct cycle
 	 * @param non_tree_edges map of non_tree edges and its position from 0 - non_tree_edges.size() - 1
  	 * @return bit_vector describing the cycle.
 	 */
-	bit_vector *get_cycle_vector(std::vector<std::pair<bool,int>> &non_tree_edges,int num_elements)
+	bit_vector *get_cycle_vector(std::vector<int> &non_tree_edges,int num_elements)
 	{
 		bit_vector *vector = new bit_vector(num_elements);
 
-		unsigned row = tree->parent_graph->rows->at(non_tree_edge_index);
-		unsigned col = tree->parent_graph->columns->at(non_tree_edge_index);
-
-		std::pair<bool,int> &edge = non_tree_edges[non_tree_edge_index];
+		unsigned row = trees->parent_graph->rows->at(non_tree_edge_index);
+		unsigned col = trees->parent_graph->columns->at(non_tree_edge_index);
 
 		//set flag for the current edge
-		if(edge.first)
-			vector->set_bit(edge.second,true);
+		if(non_tree_edges[non_tree_edge_index] >= 0)
+			vector->set_bit(non_tree_edges[non_tree_edge_index],true);
 
-		unsigned edge_offset;
+		unsigned *node_rowoffsets,*node_columns,edge_offset;
+		int *node_edgeoffsets,*node_parents,*node_distance;
+
+		int src_index = trees->get_index(root);
+
+		trees->get_node_arrays(&node_rowoffsets,&node_columns,&node_edgeoffsets,&node_parents,&node_distance,src_index);
 
 		//check for vertices row =====> root.
-		while(tree->parent_edges->at(row) != -1)
+		while(node_parents[row] != -1)
 		{
-			edge_offset = tree->parent_edges->at(row);
+			edge_offset = node_parents[row];
 
-			std::pair<bool,int> &curr_edge = non_tree_edges[edge_offset];
+			if(non_tree_edges[edge_offset] >= 0)
+				vector->set_bit(non_tree_edges[edge_offset],true);
 
-			if(curr_edge.first)
-				vector->set_bit(curr_edge.second,true);
-
-			if(tree->parent_graph->rows->at(edge_offset) != row)
-				row = tree->parent_graph->rows->at(edge_offset);
+			if(trees->parent_graph->rows->at(edge_offset) != row)
+				row = trees->parent_graph->rows->at(edge_offset);
 			else
-				row = tree->parent_graph->columns->at(edge_offset);
+				row = trees->parent_graph->columns->at(edge_offset);
 
 			assert(row != -1);
 		}
 
 		//check for vertices col =====> root.
-		while(tree->parent_edges->at(col) != -1)
+		while(node_parents[col] != -1)
 		{
-			edge_offset = tree->parent_edges->at(col);
+			edge_offset = node_parents[col];
 
-			std::pair<bool,int> &curr_edge = non_tree_edges[edge_offset];
-			
-			if(curr_edge.first)
-				vector->set_bit(curr_edge.second,true);
+			if(non_tree_edges[edge_offset] >= 0)
+				vector->set_bit(non_tree_edges[edge_offset],true);
 
-			if(tree->parent_graph->rows->at(edge_offset) != col)
-				col = tree->parent_graph->rows->at(edge_offset);
+			if(trees->parent_graph->rows->at(edge_offset) != col)
+				col = trees->parent_graph->rows->at(edge_offset);
 			else
-				col = tree->parent_graph->columns->at(edge_offset);
+				col = trees->parent_graph->columns->at(edge_offset);
 
 			assert(col != -1);
 		}
@@ -139,17 +143,17 @@ struct cycle
 	void print()
 	{
 		printf("=================================================================================\n");
-		printf("Root is %u\n",tree->root + 1);
-		printf("Edge is %u - %u\n",tree->parent_graph->rows->at(non_tree_edge_index) + 1,
-				 tree->parent_graph->columns->at(non_tree_edge_index) + 1);
+		printf("Root is %u\n",root + 1);
+		printf("Edge is %u - %u\n",trees->parent_graph->rows->at(non_tree_edge_index) + 1,
+				 trees->parent_graph->columns->at(non_tree_edge_index) + 1);
 		printf("Total weight = %d\n",total_length);
 		printf("=================================================================================\n");
 	}
 
 	void print_line()
 	{
-		printf("{%u,(%u - %u)} ",tree->root + 1,tree->parent_graph->rows->at(non_tree_edge_index) + 1,
-			tree->parent_graph->columns->at(non_tree_edge_index) + 1);
+		printf("{%u,(%u - %u)} ",root + 1,trees->parent_graph->rows->at(non_tree_edge_index) + 1,
+			trees->parent_graph->columns->at(non_tree_edge_index) + 1);
 	}
 
 };

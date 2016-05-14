@@ -42,7 +42,7 @@ struct FVS
 
 	bool contains_cycle(int node_id,bool *visited,int *parent);
 
-	bool *get_copy_fvs_array();
+	int *get_copy_fvs_array();
 
 	void print_fvs();
 
