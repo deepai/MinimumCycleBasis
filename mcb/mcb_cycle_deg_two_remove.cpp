@@ -30,6 +30,7 @@
 #include "stats.h"
 #include "FVS.h"
 #include "compressed_trees.h"
+#include "gpu_task.h"
 
 debugger dbg;
 HostTimer globalTimer;
@@ -248,6 +249,9 @@ int main(int argc,char* argv[])
 		support_vectors[i] = new bit_vector(num_non_tree_edges);
 		support_vectors[i]->set_bit(i,true);
 	}
+
+	gpu_task gpu_compute(&trees,fvs_array,non_tree_edges_map,support_vectors,num_non_tree_edges);
+	gpu_compute.initialize();
 
 	std::vector<cycle*> final_mcb;
 

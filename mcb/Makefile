@@ -8,12 +8,12 @@ DFLAGS = -DMULTI_THREAD -DPRINT -DVERBOSE
 
 CC=g++
 
-CFLAGS=-I$(IDIR) -I$(EX_INCLUDE) -fopenmp -lgomp $(DFLAGS) -g -w -std=c++11 -fpermissive
-CXXFLAGS = -I$(IDIR) -I$(EX_INCLUDE) -fopenmp -lgomp $(DFLAGS) -g -w -std=c++11 -fpermissive
+CFLAGS=-I$(IDIR) -I$(EX_INCLUDE) -I../ -fopenmp -lgomp $(DFLAGS) -g -w -std=c++11 -fpermissive
+CXXFLAGS = -I$(IDIR) -I$(EX_INCLUDE) -I../ -fopenmp -lgomp $(DFLAGS) -g -w -std=c++11 -fpermissive
 
 NVFLAGS = -arch=sm_35 -Xcompiler -fopenmp -lgomp $(DFLAGS) -w -std=c++11
 
-NVCC = nvcc $(NVFLAGS) -I$(IDIR) -I$(EX_INCLUDE) -g -G
+NVCC = nvcc $(NVFLAGS) -I$(IDIR) -I$(EX_INCLUDE) -I../ -g -G
 
 #-DMULTI_THREAD for multi-thread support
 #-DPRINT to print the bNVCCs in a file
@@ -33,7 +33,8 @@ _EXTRA_DEPS = mmio.o \
 			  CsrGraphDegreeTwoRemoval.o \
 			  CsrGraphMultiSpanningTree.o \
 			  FVS.o \
-			  compressed_trees.o
+			  compressed_trees.o \
+			  gpu_task.o
 EXTRA_DEPS = $(patsubst %,$(EX_INCLUDE)/%,$(_EXTRA_DEPS))
 
 GPU_DEPS = $(GPU_DIR)/Kernel_test.o
