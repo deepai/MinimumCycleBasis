@@ -6,8 +6,6 @@
 #include "compressed_trees.h"
 #include "bit_vector.h"
 
-#include <gpu/common.cuh>
-
 struct gpu_task
 {
 	int fvs_size;
@@ -24,6 +22,7 @@ struct gpu_task
 	{
 		fvs_array = fvs;
 		host_tree = ht;
+		fvs_size = ht->fvs_size;
 		original_nodes = ht->parent_graph->Nodes;
 		num_non_tree_edges = num_non_tree;
 		edge_size = non_tree_edges_map.size();
@@ -31,9 +30,10 @@ struct gpu_task
 		support_vectors = s_vectors;
 	}
 
-	int calculate_fixed_storage();
-	int calculate_variable_storage();
-	void initialize();
+	~gpu_task()
+	{
+
+	}
 };
 
 #endif
