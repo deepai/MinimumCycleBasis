@@ -95,6 +95,10 @@ public:
 			insert(b,a,wt,chain_index,edge_index,true);
 	}
 	//Calculate the degree of the vertices and create the rowOffset
+	/**
+	 * @brief [brief description]
+	 * @details [long description]
+	 */
 	void calculateDegreeandRowOffset()
 	{
 		rowOffsets->resize(Nodes + 1);
@@ -176,8 +180,20 @@ public:
 
 	}
 
-	void fill_tree_edges(unsigned *r,unsigned *c,unsigned *e,std::vector<unsigned> *tree_edges)
+	/**
+	 * @brief [brief description]
+	 * @details [long description]
+	 *
+	 * @param r [description]
+	 * @param c [description]
+	 * @param e [description]
+	 * @param tree_edges [description]
+	 * @param src [description]
+	 */
+	void fill_tree_edges(unsigned *r,unsigned *c,unsigned *e,std::vector<unsigned> *tree_edges,unsigned src)
 	{
+		assert(tree_edges->size() + 1 == Nodes);
+
 		std::vector<edge*> temporary_array;
 		unsigned row,col;
 		for(int i=0;i<tree_edges->size();i++)
@@ -196,6 +212,8 @@ public:
 			e[i] = temporary_array[i]->original_edge_index;
 		}
 
+		e[temporary_array.size()] = -1;
+
 		unsigned prev = 0,current;
 
 		for(int i=0;i<=Nodes;i++)
@@ -211,6 +229,15 @@ public:
 		temporary_array.clear();
 	}
 
+	/**
+	 * @brief [brief description]
+	 * @details [long description]
+	 *
+	 * @param non_tree_edges [description]
+	 * @param src [description]
+	 *
+	 * @return [description]
+	 */
 	std::vector<unsigned> *get_spanning_tree(std::vector<unsigned> **non_tree_edges,
 						    int src);
 

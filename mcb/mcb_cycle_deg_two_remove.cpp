@@ -30,6 +30,9 @@
 #include "stats.h"
 #include "FVS.h"
 #include "compressed_trees.h"
+#include "gpu_task.h"
+
+#include <gpu/common.cuh>
 
 debugger dbg;
 HostTimer globalTimer;
@@ -69,7 +72,7 @@ int main(int argc,char* argv[])
 
 	int v1,v2,Initial_Vertices,weight;;
 
-	int nodes,edges,chunk_size = 1;
+	int nodes,edges,chunk_size = 1,nstreams = 2;
 
 	//firt line of the input file contains the number of nodes and edges
 	Reader.get_nodes_edges(nodes,edges); 
@@ -106,6 +109,8 @@ int main(int argc,char* argv[])
 		
 		return 0;
 	}
+
+	init_cuda();
 
 	std::vector<std::vector<unsigned> > *chains = new std::vector<std::vector<unsigned> >();
 
@@ -172,6 +177,8 @@ int main(int argc,char* argv[])
 			if(non_tree_edges_map[reduced_graph->reverse_edge->at(i)] >=0 )
 				non_tree_edges_map[i] = non_tree_edges_map[reduced_graph->reverse_edge->at(i)];
 	}
+
+	chunk_size = fvs_helper.get_num_elements();
 
 	//construct the initial
 	compressed_trees trees(chunk_size,fvs_helper.get_num_elements(),fvs_array,reduced_graph);
@@ -249,24 +256,47 @@ int main(int argc,char* argv[])
 		support_vectors[i]->set_bit(i,true);
 	}
 
+	gpu_task gpu_compute(&trees,(int*)trees.final_vertices,non_tree_edges_map,support_vectors,
+			     num_non_tree_edges);
+	gpu_struct device_struct(non_tree_edges_map.size(),num_non_tree_edges,support_vectors[0]->size,
+				 gpu_compute.original_nodes,gpu_compute.fvs_size,chunk_size,nstreams);
+
+	configure_grid(0,gpu_compute.fvs_size);
+
+	device_struct.initialize_memory(&gpu_compute);
+	device_struct.calculate_memory();
+
 	std::vector<cycle*> final_mcb;
 
 	double precompute_time = 0;
 	double cycle_inspection_time = 0;
 	double independence_test_time = 0;
+	double gpu_precompute_time = 0;
+
+	double kernel_init_time = 0;
+	double kernel_multi_search_time = 0;
+	double transfer_time = 0;
 
 	//Main Outer Loop of the Algorithm.
 	for(int e=0;e<num_non_tree_edges;e++)
 	{
-		globalTimer.start_timer();
+		//globalTimer.start_timer();
 
-		#pragma omp parallel for
-		for(int i=0;i<num_threads;i++)
-		{
-			multi_work[i]->precompute_supportVec(non_tree_edges_map,*support_vectors[e]);
-		}
+		transfer_time += device_struct.copy_support_vector(support_vectors[e]);
 
-		precompute_time += globalTimer.get_event_time();
+		//#pragma omp parallel for
+		//for(int i=0;i<num_threads;i++)
+		//{
+		//	multi_work[i]->precompute_supportVec(non_tree_edges_map,*support_vectors[e]);
+		//}
+
+		//precompute_time += globalTimer.get_event_time();
+
+		kernel_init_time += device_struct.Kernel_init_edges_helper(0,gpu_compute.fvs_size,0);
+		kernel_multi_search_time += device_struct.Kernel_multi_search_helper(0,gpu_compute.fvs_size,0);
+
+		transfer_time += device_struct.fetch(&gpu_compute);
+
 		globalTimer.start_timer();
 
 		unsigned *node_rowoffsets,*node_columns,*precompute_nodes;
@@ -302,7 +332,6 @@ int main(int argc,char* argv[])
 
 			if(bit == 1)
 			{
-
 				final_mcb.push_back(*cycle);
 				list_cycle.erase(cycle);
 				break;
@@ -328,7 +357,9 @@ int main(int argc,char* argv[])
 
 	list_cycle.clear();
 
-	info.setPrecomputeShortestPathTime(precompute_time);
+	gpu_precompute_time = kernel_init_time + kernel_multi_search_time + transfer_time;
+
+	info.setPrecomputeShortestPathTime(gpu_precompute_time/1000);
 	info.setCycleInspectionTime(cycle_inspection_time);
 	info.setIndependenceTestTime(independence_test_time);
 	info.setTotalTime();
@@ -346,6 +377,11 @@ int main(int argc,char* argv[])
 	info.print_stats(argv[2]);
 
 	delete[] fvs_array;
+
+	debug(kernel_init_time/1000);
+	debug(kernel_multi_search_time/1000);
+	debug(transfer_time/1000);
+	debug(gpu_precompute_time/1000);
 
 	return 0;
 }

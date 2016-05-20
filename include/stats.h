@@ -119,7 +119,7 @@ struct stats
 
 		fprintf(fout,"%5d,%5d,%5d,%5d,%5d,%5d,%5d,%15lf,%15lf,%15lf,%15lf,%15lf,%15lf\n",num_nodes_removed,
 																								num_fvs,
-																								num_nodes + num_nodes_removed - num_fvs,
+																								num_nodes - num_fvs,
 																								num_initial_cycles,
 																								num_isometric_cycles,
 																								num_final_cycles,

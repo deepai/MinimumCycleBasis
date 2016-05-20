@@ -4,16 +4,17 @@ SRCDIR=src
 
 EX_INCLUDE = ../include
 
-DFLAGS = -DMULTI_THREAD -DPRINT -DVERBOSE
+#DFLAGS = -DMULTI_THREAD -DPRINT -DVERBOSE
+DFLAGS = -DMULTI_THREAD  -DNDEBUG
 
 CC=g++
 
-CFLAGS=-I$(IDIR) -I$(EX_INCLUDE) -fopenmp -lgomp $(DFLAGS) -g -w -std=c++11 -fpermissive
-CXXFLAGS = -I$(IDIR) -I$(EX_INCLUDE) -fopenmp -lgomp $(DFLAGS) -g -w -std=c++11 -fpermissive
+CFLAGS=-I$(IDIR) -I$(EX_INCLUDE) -I../ -fopenmp -lgomp $(DFLAGS) -g -w -std=c++11 -fpermissive
+CXXFLAGS = -I$(IDIR) -I$(EX_INCLUDE) -I../ -fopenmp -lgomp $(DFLAGS) -g -w -std=c++11 -fpermissive
 
 NVFLAGS = -arch=sm_35 -Xcompiler -fopenmp -lgomp $(DFLAGS) -w -std=c++11
 
-NVCC = nvcc $(NVFLAGS) -I$(IDIR) -I$(EX_INCLUDE) -g -G
+NVCC = nvcc $(NVFLAGS) -I$(IDIR) -I$(EX_INCLUDE) -I../
 
 #-DMULTI_THREAD for multi-thread support
 #-DPRINT to print the bNVCCs in a file
@@ -36,7 +37,10 @@ _EXTRA_DEPS = mmio.o \
 			  compressed_trees.o
 EXTRA_DEPS = $(patsubst %,$(EX_INCLUDE)/%,$(_EXTRA_DEPS))
 
-GPU_DEPS = $(GPU_DIR)/Kernel_test.o
+GPU_DEPS = $(GPU_DIR)/gpu_struct.o \
+		   $(GPU_DIR)/kernel_init_edges.o \
+		   $(GPU_DIR)/common.o \
+		   $(GPU_DIR)/kernel_multi_search.o
 
 OBJ1 = mcb_cycle_deg_two_remove.o $(GPU_DEPS)
 OBJ2 = mcb_cycle.o
@@ -50,7 +54,7 @@ mcb_cycle_deg_two_remove: $(OBJ1) $(EXTRA_DEPS)
 	$(NVCC) -o $@ $^ $(LIBS) $(DFLAGS)
 
 mcb_cycle_deg_two_remove.o: mcb_cycle_deg_two_remove.cpp $(DEPS)
-	$(NVCC) -c -o $@ $< $(DFLAGS)
+	$(NVCC) -c -o $@ $< $(DFLAGS) -I../
 
 Test_deg_two_remove: Test_deg_two_remove.o $(EXTRA_DEPS)
 	$(NVCC) -o $@ $^ $(LIBS) $(DFLAGS)

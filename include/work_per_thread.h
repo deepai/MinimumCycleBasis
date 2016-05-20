@@ -70,7 +70,6 @@ struct worker_thread
 		for(int i=0;i<non_tree_edges->size();i++)
 		{
 			total_weight = 0;
-			
 			is_edge_cycle = helper->is_edge_cycle(non_tree_edges->at(i),total_weight,src);
 
 			if(is_edge_cycle)
@@ -129,6 +128,8 @@ struct worker_thread
 				unsigned top_node = q.front();
 				q.pop();
 
+				assert(precompute_nodes[top_node] == 0 || precompute_nodes[top_node] == 1);
+
 				for(int j=node_rowoffsets[top_node];j<node_rowoffsets[top_node+1];j++)
 				{
 					column = node_columns[j];
@@ -144,9 +145,13 @@ struct worker_thread
 						precompute_nodes[column] = (precompute_nodes[top_node] + bit)%2;
 					}
 					else
+					{
 						precompute_nodes[column] = precompute_nodes[top_node];
+					}
+
 				}
 			}
+			precompute_nodes[src] = 0;
 		}
 	}
 };

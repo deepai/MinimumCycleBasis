@@ -103,6 +103,8 @@ struct compressed_trees
 
 	void copy(int index,std::vector<unsigned> *tree_edges,
 							std::vector<int> *parent_edges,std::vector<int> *distances);
+
+	void print_tree();
 };
 
 #endif

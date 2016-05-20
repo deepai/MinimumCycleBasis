@@ -260,10 +260,10 @@ void FVS::print_fvs()
 {
 	#ifdef PRINT
 
-		printf("Number of FVS elements = %d\n",FVS_SET.size());
-		for(std::list<int>::iterator it = FVS_SET.begin(); it != FVS_SET.end();it++)
-			printf("%d ",*it + 1);
-		printf("\n");
+		// printf("Number of FVS elements = %d\n",FVS_SET.size());
+		// for(std::list<int>::iterator it = FVS_SET.begin(); it != FVS_SET.end();it++)
+		// 	printf("%d ",*it + 1);
+		// printf("\n");
 
 	#endif
 }
