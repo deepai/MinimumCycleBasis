@@ -2,6 +2,27 @@
 #define _H_DIJKSTRA
 
 #include <queue>
+#include <vector>
+
+struct edge_sorter
+{
+	int edge_offsets;
+	int level;
+
+	edge_sorter(int e,int l) : edge_offsets(e),level(l)
+	{
+
+	}
+
+
+	struct compare
+	{
+		bool operator()(const edge_sorter &a,const edge_sorter &b)
+		{
+			return (a.level < b.level);
+		}
+	};
+};
 
 struct dijkstra
 {
@@ -151,6 +172,66 @@ struct dijkstra
 				(*non_tree_edges)->push_back(i);
 			}
 		}
+	}
+
+	void fill_tree_edges(unsigned *csr_rows,unsigned *csr_cols,unsigned *csr_nodes_index,
+		int *csr_edge_offset,int *csr_parent,int *csr_distance,unsigned src)
+	{
+		std::vector<edge_sorter> edges;
+		edges.push_back(edge_sorter(-1,0));
+
+		for(int i=0;i<tree_edges->size();i++)
+		{
+			int offset = tree_edges->at(i);
+			int row = graph->rows->at(offset);
+			int col = graph->columns->at(offset);
+
+			edges.push_back(edge_sorter(offset,level[col]));
+		}
+
+		sort(edges.begin(),edges.end(),edge_sorter::compare());
+
+		assert(edges.size() == Nodes);
+
+		//edges array
+		for(int i=0;i<edges.size();i++)
+		{
+			csr_rows[edges[i].level]++;
+			if(edges[i].edge_offsets == -1)
+			{
+				csr_nodes_index[src] = i;
+				csr_cols[i] = -1;
+				csr_edge_offset[i] = -1;
+
+				csr_parent[src] = -1;
+				csr_distance[src] = 0;
+			}
+			else
+			{
+				int row = graph->rows->at(edges[i].edge_offsets);
+				int col = graph->columns->at(edges[i].edge_offsets);
+
+				csr_nodes_index[col] = i;
+				csr_cols[i] = csr_nodes_index[row];
+
+				assert(csr_cols[i] >=0 && csr_cols[i] < i);
+
+				csr_edge_offset[i] = edges[i].edge_offsets;
+
+				csr_parent[col] = edges[i].edge_offsets;
+				csr_distance[col] = distance[col];
+			}
+		}
+
+		unsigned prev = 0,temp;
+		for(int i=0;i<=Nodes;i++)
+		{
+			temp = csr_rows[i];
+			csr_rows[i] = prev;
+			prev += temp;
+		}
+
+		edges.clear();
 	}
 
 	bool is_edge_cycle(unsigned edge_offset, int &total_weight , unsigned src)

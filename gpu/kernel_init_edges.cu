@@ -33,10 +33,10 @@ unsigned getBit(unsigned long long val, int pos)
 }
 
 __global__
-void __kernel_init_edge(const int* __restrict__ d_non_tree_edges,const int* d_parent_edges,
+void __kernel_init_edge(const int* __restrict__ d_non_tree_edges,const int* d_edge_offsets,
 						int *d_precompute_array,const int* __restrict__ d_fvs_vertices,
-						const unsigned long long *d_si_vector,pitch *gpu_pitch,
-						int start,int end,int stream_index,int chunk_size,int original_nodes,int size_vector,
+						const unsigned long long *d_si_vector,int start,int end,
+						int stream_index,int chunk_size,int original_nodes,int size_vector,
 						int fvs_size,int num_non_tree_edges,int num_edges)
 {
 	int tid = threadIdx.x;
@@ -55,11 +55,11 @@ void __kernel_init_edge(const int* __restrict__ d_non_tree_edges,const int* d_pa
 		int src = __ldg(&d_fvs_vertices[src_index]);
 
 		int *d_row = get_pointer(d_precompute_array,src_index,original_nodes,chunk_size,stream_index);
-		const int* __restrict__ d_parent = get_pointer_const(d_parent_edges,src_index,original_nodes,chunk_size,stream_index);
+		const int* __restrict__ d_edge = get_pointer_const(d_edge_offsets,src_index,original_nodes,chunk_size,stream_index);
 
 		for(int edge_index = tid; edge_index < original_nodes ; edge_index += blockDim.x)
 		{
-			int edge_offset = __ldg(&d_parent[edge_index]);
+			int edge_offset = __ldg(&d_edge[edge_index]);
 			assert(edge_offset < num_edges);
 			//tree edges
 			if(edge_offset >= 0)
@@ -89,7 +89,7 @@ void __kernel_init_edge(const int* __restrict__ d_non_tree_edges,const int* d_pa
 			}
 			else
 			{
-				assert(edge_offset == -1 && edge_index == src);
+				assert(edge_offset == -1);
 				d_row[edge_index] = 0;
 			}
 		}
@@ -119,14 +119,11 @@ float gpu_struct::Kernel_init_edges_helper(int start,int end,int stream_index)
 
 	timer.Start();
 
-	//debug("init",start,end);
-
 	__kernel_init_edge<<<min(dimGrid.x,total_length),dimBlock,0,streams[stream_index]>>>(d_non_tree_edges,
-																					 d_parent_edges,
+																					 d_edge_offsets,
 																					 d_precompute_array,
 																					 d_fvs_vertices,
 																					 d_si_vector,
-																					 gpu_pitch,
 																					 start,
 																					 end,
 																					 stream_index,

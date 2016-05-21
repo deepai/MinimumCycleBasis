@@ -67,155 +67,65 @@ unsigned setBit(unsigned val, unsigned toInsert, int pos)
 
 
 __device__ void multi_search(const int* R,const int* C,const int* fvs_vertices,
-							 const int &n,int *d,int *Q, int *Q2,pitch *p,
-							 const int &length,const int &stream_index)
+							 const int &n,int *d,const int &length,const int &stream_index)
 {
 	int j = threadIdx.x;  //threadId
 	int lane_id = getLaneId();     //lane id;
 	int warp_id = threadIdx.x/32;
 
 	int src_index;
+
 	int start = stream_index * length;
 	int end = start + length;
 
-	__shared__ int *Q_row;
-	__shared__ int *Q2_row;
-
-	if(j == 0)
-	{
-		Q_row = get_row(Q,p->Q_pitch);
-		Q2_row = get_row(Q2,p->Q2_pitch);
-	}
-
-	__syncthreads();
-
-	for(src_index=blockIdx.x + start; src_index < end; src_index+=gridDim.x)
+	for(src_index=blockIdx.x*WARP_SIZE + warp_id + start; src_index < end; src_index += (gridDim.x)*WARP_SIZE)
 	{
 		int i = __ldg(&fvs_vertices[src_index]);
-		int v_discovered = 0;
 
 		int *d_row = get_pointer(d,src_index - start,n,length,stream_index);
 
 		const int* __restrict__ r_row = get_pointer_const(R,src_index - start,n + 1,length,stream_index);
 		const int* __restrict__ c_row = get_pointer_const(C,src_index - start,n,length,stream_index);
 
-		__shared__ int Q_len;
-		__shared__ int Q2_len;
-		__shared__ bool degree_zero_source;
+		int k = 0; //current level
 
-		if(j == 0)
+		int r,r_end,r_prev;
+
+		while(k < n) //All threads in a warp simultaneously executes nodes in a level.
 		{
-			d_row[i] = 0;
-
-			Q_row[0] = i;
-			Q_len = 1;
-
-			Q2_len = 0;
-
-			if(__ldg(&r_row[i+1]) == __ldg(&r_row[i])) //human-readable: if(outdegree == 0)
+			if(lane_id == 0)
 			{
-				degree_zero_source = true;
+				r_prev = __ldg(&r_row[k]);
+				r_end   = __ldg(&r_row[k+1]);
 			}
-			else
+
+			r_prev = __shfl(r_prev,0);
+			r_end = __shfl(r_end,0);
+			r = r_prev + lane_id;
+
+			while(r < r_end)
 			{
-				degree_zero_source = false;
+				int c = __ldg(&c_row[r]); //c is the index of the parent of the current edge. if c == -1, its the root node
+
+				if(c != -1)
+					d_row[r] = d_row[r] ^ d_row[c];
+
+				r += WARP_SIZE;
 			}
-		}
-		__syncthreads();
 
-		//Don't waste time traversing vertices of degree zero
-		if(degree_zero_source)
-		{
-			continue;
-		}
-
-		__shared__ int next_queue_element;
-
-		while(1) //While a frontier exists for this source vertex...
-		{
-			int k = warp_id; //current_queue_element
-
-			//number of warps. Warps [0,w-1] process queue elements [0,w-1] in the current frontier and asynchronously grab elements [w,Q_len).
-			if(j == 0)
-			{
-				next_queue_element = blockDim.x/WARP_SIZE;
-			}
-			__syncthreads();
-			//Let each warp be assigned to an element in the queue, once that element is processed the warp grabs the next queue element, if any. Warps synchronize once all queue elements are handled.
-
-			while(k < Q_len) //Some warps will execute this loop, some won't. When a warp does, all threads in the warp do.
-			{
-				v_discovered = lane_id;
-
-				int v,r,r_end,d_row_v,old_offset;
-
-				if(lane_id == 0)
-				{
-					v = Q_row[k];
-					r = __ldg(&r_row[v]);
-					r_end = __ldg(&r_row[v+1]);
-					d_row_v = d_row[v];
-					old_offset = atomicAdd(&Q2_len,r_end - r);
-				}
-
-				v = __shfl(v,0); //copy from lane 0
-				r = __shfl(r,0) + lane_id; //copy from lane 0
-				r_end = __shfl(r_end,0); //copy from lane 0
-				d_row_v = __shfl(d_row_v,0); //copy from lane 0
-				old_offset = __shfl(old_offset,0); //copy from lane 0
-
-				while(r < r_end) //Only some threads in each warp will execute this loop
-				{
-					int w = __ldg(&c_row[r]);
-
-					//atomics are only needed here when we're computing shortest path calculations
-					d_row[w] = d_row_v ^ d_row[w]; //HERE WE UPDATE THE EDGE ENDPOINTS
-					r += WARP_SIZE;
-
-					Q2_row[old_offset + v_discovered] = w;
-
-					//increase count by WARP_SIZE
-					v_discovered += WARP_SIZE;
-				}
-
-				if(lane_id == 0)
-				{
-					k = atomicAdd(&next_queue_element,1); //Grab the next item off of the queue
-				}
-
-				k = __shfl(k,0); //All threads in the warp need the value of k
-			}
-			__syncthreads();
-
-			//TODO: Combine getMax, insertStack, and updateEndpoints into one functon that resets the queue
-			if(Q2_len == 0)
+			if(r_prev == r_end)
 				break;
-			else
-			{
-				if(j == 0)
-				{
-					int *tmp = Q_row;
-					Q_row = Q2_row;
-					Q2_row = tmp;
 
-					Q_len = Q2_len;
-					Q2_len = 0;
-				}
-
-				__syncthreads();
-			}
+			k++;
 		}
-
-		// __syncthreads(); //debarshi
 	}
 }
 __global__
 void __kernel_multi_search_shuffle_based(const int *R,const int *C,const int *fvs_vertices,const int n,int *d,
-										 int *Q, int *Q2,pitch *p,
 										 const int length,const int stream_index)
 {
 	//Since users need to handle this, we can provide default policies or clean up the Queueing interfac
-	multi_search(R,C,fvs_vertices,n,d,Q,Q2,p,length,stream_index);
+	multi_search(R,C,fvs_vertices,n,d,length,stream_index);
 }
 
 
@@ -234,9 +144,6 @@ float gpu_struct::Kernel_multi_search_helper(int start,int end,int stream_index)
 																										  d_fvs_vertices,
 																										  original_nodes,
 																										  d_precompute_array,
-																										  Q_d,
-																										  Q2_d,
-																										  gpu_pitch,
 																										  total_length,
 																										  stream_index);
 
