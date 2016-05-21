@@ -28,7 +28,7 @@ int compressed_trees::get_node_arrays_warp(unsigned **csr_rows,unsigned **csr_co
 	*csr_parent = parent[row_number] + (col_number * original_nodes);
 
 	*csr_distance = distance[row_number] + (col_number * original_nodes);
-	*csr_nodes_index = distance[row_number] + (col_number * original_nodes);
+	*csr_nodes_index = nodes_index[row_number] + (col_number * original_nodes);
 }
 
 int compressed_trees::get_precompute_array(unsigned **precompute_tree,int node_index)

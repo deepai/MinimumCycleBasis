@@ -3,7 +3,7 @@
 void gpu_struct::init_memory_setup()
 {
 	CudaError(cudaMalloc(&d_non_tree_edges,to_byte_32bit(num_edges)));
-	CudaError(cudaMalloc(&d_parent_edges,to_byte_32bit(chunk_size * original_nodes)));
+	CudaError(cudaMalloc(&d_edge_offsets,to_byte_32bit(chunk_size * original_nodes)));
 	CudaError(cudaMalloc(&d_row_offset,to_byte_32bit(chunk_size * (original_nodes + 1))));
 	CudaError(cudaMalloc(&d_columns,to_byte_32bit(chunk_size * original_nodes)));
 	CudaError(cudaMalloc(&d_precompute_array,to_byte_32bit(chunk_size * original_nodes)));
@@ -29,24 +29,18 @@ void gpu_struct::destroy_streams()
 gpu_struct::~gpu_struct()
 {
 	CudaError(cudaFree(d_non_tree_edges));
-	CudaError(cudaFree(d_parent_edges));
+	CudaError(cudaFree(d_edge_offsets));
 	CudaError(cudaFree(d_row_offset));
 	CudaError(cudaFree(d_columns));
 	CudaError(cudaFree(d_precompute_array));
 	CudaError(cudaFree(d_si_vector));
 	CudaError(cudaFree(d_fvs_vertices));
 
-	CudaError(cudaFree(gpu_pitch));
-
-	CudaError(cudaFree(Q_d));
-	CudaError(cudaFree(Q2_d));
-
 	destroy_streams();
 }
 
 void gpu_struct::init_pitch()
 {
-	CudaError(cudaMalloc(&gpu_pitch,sizeof(pitch)));
 }
 
 void gpu_struct::calculate_memory()
@@ -59,8 +53,6 @@ void gpu_struct::calculate_memory()
 
 	static_memory_bytes += to_byte_32bit(num_edges);
 	static_memory_bytes += to_byte_64bit(size_vector);
-	static_memory_bytes += host_pitch.Q_pitch * dimGrid.x;
-	static_memory_bytes += host_pitch.Q2_pitch * dimGrid.x;
 
 	variable_memory_bytes += to_byte_32bit(chunk_size * original_nodes);
 	variable_memory_bytes += to_byte_32bit(chunk_size * (original_nodes + 1));
@@ -81,7 +73,7 @@ void gpu_struct::initialize_memory(gpu_task *host_memory)
 	CudaError(cudaMemcpy(d_non_tree_edges,host_memory->non_tree_edges_array,
 			  to_byte_32bit(num_edges),cudaMemcpyHostToDevice));
 
-	CudaError(cudaMemcpy(d_parent_edges,host_memory->host_tree->parent[0],
+	CudaError(cudaMemcpy(d_edge_offsets,host_memory->host_tree->edge_offset[0],
 			  to_byte_32bit(chunk_size * original_nodes),cudaMemcpyHostToDevice));
 
 	CudaError(cudaMemcpy(d_row_offset,host_memory->host_tree->tree_rows[0],
@@ -96,11 +88,6 @@ void gpu_struct::initialize_memory(gpu_task *host_memory)
 	CudaError(cudaMemcpy(d_fvs_vertices,host_memory->fvs_array,
 			  to_byte_32bit(fvs_size),cudaMemcpyHostToDevice));
 
-	CudaError(cudaMallocPitch(&Q_d,&host_pitch.Q_pitch,to_byte_32bit(original_nodes),dimGrid.x));
-
-	CudaError(cudaMallocPitch(&Q2_d,&host_pitch.Q2_pitch,to_byte_32bit(original_nodes),dimGrid.x));
-
-	CudaError(cudaMemcpy(gpu_pitch,&host_pitch,sizeof(pitch),cudaMemcpyHostToDevice));
 }
 
 float gpu_struct::copy_support_vector(bit_vector *vector)

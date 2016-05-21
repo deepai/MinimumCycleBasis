@@ -200,7 +200,7 @@ int main(int argc,char* argv[])
 	for(int i = 0; i < trees.fvs_size; ++i)
 	{
 		int threadId = omp_get_thread_num();
-		count_cycles += multi_work[threadId]->produce_sp_tree_and_cycles(i,reduced_graph);
+		count_cycles += multi_work[threadId]->produce_sp_tree_and_cycles_warp(i,reduced_graph);
 	}
 
 	localTime = globalTimer.get_event_time();
@@ -299,7 +299,7 @@ int main(int argc,char* argv[])
 
 		globalTimer.start_timer();
 
-		unsigned *node_rowoffsets,*node_columns,*precompute_nodes;
+		unsigned *node_rowoffsets,*node_columns,*precompute_nodes,*nodes_index;
 		int *node_edgeoffsets,*node_parents,*node_distance;
 		unsigned src,edge_offset,reverse_edge,row,col,position,bit;
 
@@ -312,7 +312,7 @@ int main(int argc,char* argv[])
 			src = (*cycle)->get_root();
 			src_index = trees.vertices_map[src];
 
-			trees.get_node_arrays(&node_rowoffsets,&node_columns,&node_edgeoffsets,&node_parents,&node_distance,src_index);
+			trees.get_node_arrays_warp(&node_rowoffsets,&node_columns,&node_edgeoffsets,&node_parents,&node_distance,&nodes_index,src_index);
 			trees.get_precompute_array(&precompute_nodes,src_index);
 
 			edge_offset = (*cycle)->non_tree_edge_index;
@@ -327,8 +327,8 @@ int main(int argc,char* argv[])
 				bit = support_vectors[e]->get_bit(non_tree_edges_map[edge_offset]);
 			}
 
-			bit = (bit + precompute_nodes[row])%2;
-			bit = (bit + precompute_nodes[col])%2;
+			bit = (bit + precompute_nodes[nodes_index[row]])%2;
+			bit = (bit + precompute_nodes[nodes_index[col]])%2;
 
 			if(bit == 1)
 			{

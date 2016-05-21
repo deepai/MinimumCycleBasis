@@ -2,7 +2,6 @@
 #define __H_GPU_STRUCT
 
 #include "utils.h"
-#include "pitch.h"
 #include "gpu_task.h"
 #include "bit_vector.h"
 #include "gputimer.h"
@@ -22,7 +21,7 @@ struct gpu_struct
 	int num_non_tree_edges;
 
 	int *d_non_tree_edges;
-	int *d_parent_edges;
+	int *d_edge_offsets;
 	int *d_row_offset;
 	int *d_columns;
 	int *d_precompute_array;
@@ -31,15 +30,9 @@ struct gpu_struct
 	GpuTimer timer;
 
 	//Device pointers for queues
-	int *Q_d;
-	int *Q2_d;
-
 	int nstreams;
 
 	unsigned long long *d_si_vector;
-
-	pitch host_pitch;
-	pitch *gpu_pitch;
 
 	cudaStream_t* streams;
 

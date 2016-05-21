@@ -99,12 +99,12 @@ struct cycle
 		if(non_tree_edges[non_tree_edge_index] >= 0)
 			vector->set_bit(non_tree_edges[non_tree_edge_index],true);
 
-		unsigned *node_rowoffsets,*node_columns,edge_offset;
+		unsigned *node_rowoffsets,*node_columns,edge_offset,*nodes_index;;
 		int *node_edgeoffsets,*node_parents,*node_distance;
 
 		int src_index = trees->get_index(root);
 
-		trees->get_node_arrays(&node_rowoffsets,&node_columns,&node_edgeoffsets,&node_parents,&node_distance,src_index);
+		trees->get_node_arrays_warp(&node_rowoffsets,&node_columns,&node_edgeoffsets,&node_parents,&node_distance,&nodes_index,src_index);
 
 		//check for vertices row =====> root.
 		while(node_parents[row] != -1)
