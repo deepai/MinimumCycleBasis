@@ -45,38 +45,52 @@ GPU_DEPS = $(GPU_DIR)/gpu_struct.o \
 OBJ1 = mcb_cycle_deg_two_remove.o $(GPU_DEPS)
 OBJ2 = mcb_cycle.o
 
-all: mcb_cycle mcb_cycle_deg_two_remove Test_deg_two_remove Test
+all: mcb_cycle mcb_cycle_deg_two_remove Test_deg_two_remove Test mcb_non_cpu_rd
 
 $(GPU_DIR)/%.o: $(GPU_DIR)/%.cu $(GPU_HEADERS)
-	$(NVCC) -dc -o $@ $< -I../
+	@echo [NVCC] $@
+	@$(NVCC) -dc -o $@ $< -I../
 
 mcb_cycle_deg_two_remove: $(OBJ1) $(EXTRA_DEPS)
-	$(NVCC) -o $@ $^ $(LIBS) $(DFLAGS)
+	@echo [NVCC] $@
+	@$(NVCC) -o $@ $^ $(LIBS) $(DFLAGS)
 
 mcb_cycle_deg_two_remove.o: mcb_cycle_deg_two_remove.cpp $(DEPS)
-	$(NVCC) -c -o $@ $< $(DFLAGS) -I../
+	@echo [NVCC] $@
+	@$(NVCC) -c -o $@ $< $(DFLAGS) -I../
 
 Test_deg_two_remove: Test_deg_two_remove.o $(EXTRA_DEPS)
-	$(NVCC) -o $@ $^ $(LIBS) $(DFLAGS)
+	@echo [NVCC] $@
+	@$(NVCC) -o $@ $^ $(LIBS) $(DFLAGS)
 
 Test_deg_two_remove.o: Test_deg_two_remove.cpp $(DEPS)
-	$(NVCC) -c -o $@ $< $(DFLAGS)
+	@echo [NVCC] $@
+	@$(NVCC) -c -o $@ $< $(DFLAGS)
 
 mcb_cycle: $(OBJ2) $(EXTRA_DEPS)
-	$(NVCC) -o $@ $^ $(LIBS) $(DFLAGS) -I../
+	@echo [NVCC] $@
+	@$(NVCC) -o $@ $^ $(LIBS) $(DFLAGS) -I../
 
 mcb_cycle.o: mcb_cycle.cpp $(DEPS)
-	$(NVCC) -c -o $@ $< $(DFLAGS) -I../
+	@echo [NVCC] $@
+	@$(NVCC) -c -o $@ $< $(DFLAGS) -I../
 
 Test: Test.o $(EXTRA_DEPS)
-	$(NVCC) -o $@ $^ $(LIBS) $(DFLAGS)
+	@echo [NVCC] $@
+	@$(NVCC) -o $@ $^ $(LIBS) $(DFLAGS)
+
+mcb_non_cpu_rd: mcb_non_cpu_rd.cpp $(DEPS) $(EXTRA_DEPS)
+	@echo [CC] $@
+	@$(CC) -o $@ $< $(CFLAGS) $(EXTRA_DEPS) $(DFLAGS) -I../
 
 Test.o: Test.cpp $(DEPS)
-	$(NVCC) -c -o $@ $< $(DFLAGS)
+	@echo [NVCC] $@
+	@$(NVCC) -c -o $@ $< $(DFLAGS)
 
 $(include)/%.o: $(include)/%.cpp $(DEPS)
-	$(NVCC) $(LIBS) $(DFLAGS) -o $@ $<
+	@echo [CC] $@
+	@$(NVCC) $(LIBS) $(DFLAGS) -o $@ $<
 .PHONY: clean
 
 clean:
-	rm -f $(GPU_DIR)/*.o $(ODIR)/*.o *~ core $(INCDIR)/*~  *.o ../include/*.o mcb_cycle_deg_two_remove Test_deg_two_remove mcb_cycle Test
+	rm -f $(GPU_DIR)/*.o $(ODIR)/*.o *~ core $(INCDIR)/*~  *.o ../include/*.o mcb_cycle_deg_two_remove Test_deg_two_remove mcb_cycle Test mcb_non_cpu_rd
