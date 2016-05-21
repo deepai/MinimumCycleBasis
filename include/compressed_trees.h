@@ -23,6 +23,7 @@ struct compressed_trees
 	int **distance;    //distance array in terms of unweighted edge.
 
 	unsigned **precompute_value;  //This is used to store the precomputed value corresponding to each tree.
+	unsigned **nodes_index;     //This is used to store the index of the nodes corresponding to ith position.
 
 	csr_multi_graph *parent_graph;
 
@@ -45,6 +46,7 @@ struct compressed_trees
 		edge_offset = new int*[num_rows];
 		parent = new int*[num_rows];
 		distance = new int*[num_rows];
+		nodes_index = new unsigned*[num_rows];
 
 		precompute_value = new unsigned*[num_rows];
 
@@ -55,6 +57,7 @@ struct compressed_trees
 			edge_offset[i] = new int[chunk * original_nodes];
 			parent[i] = new int[chunk * original_nodes];
 			distance[i] = new int[chunk * original_nodes];
+			nodes_index[i] = new unsigned[chunk * original_nodes];
 
 			precompute_value[i] = new unsigned[chunk * original_nodes];
 
@@ -84,6 +87,7 @@ struct compressed_trees
 			delete[] edge_offset[i];
 			delete[] precompute_value[i];
 			delete[] distance[i];
+			delete[] nodes_index[i];
 		}
 
 		delete [] tree_rows;
@@ -93,9 +97,13 @@ struct compressed_trees
 		delete [] precompute_value;
 		delete [] distance;
 		delete [] final_vertices;
+		delete [] nodes_index;
 	}
 
 	int get_node_arrays(unsigned **csr_rows,unsigned **csr_cols,int **csr_edge_offset,int **csr_parent,int **csr_distance,int node_index);
+
+	int get_node_arrays_warp(unsigned **csr_rows,unsigned **csr_cols,int **csr_edge_offset,int **csr_parent,
+									  int **csr_distance,unsigned **csr_nodes_index,int node_index);
 
 	int get_precompute_array(unsigned **precompute_tree,int node_index);
 
