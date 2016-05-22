@@ -66,8 +66,8 @@ unsigned setBit(unsigned val, unsigned toInsert, int pos)
 #define Q_THRESHOLD 0
 
 
-__device__ void multi_search(const int* R,const int* C,const int* fvs_vertices,
-							 const int &n,int *d,const int &length,const int &stream_index)
+__device__ void multi_search(const int* R,const int* C,const int &n,int *d,
+			     const int &length,const int &stream_index)
 {
 	int j = threadIdx.x;  //threadId
 	int lane_id = getLaneId();     //lane id;
@@ -80,8 +80,6 @@ __device__ void multi_search(const int* R,const int* C,const int* fvs_vertices,
 
 	for(src_index=blockIdx.x*WARP_SIZE + warp_id + start; src_index < end; src_index += (gridDim.x)*WARP_SIZE)
 	{
-		int i = __ldg(&fvs_vertices[src_index]);
-
 		int *d_row = get_pointer(d,src_index - start,n,length,stream_index);
 
 		const int* __restrict__ r_row = get_pointer_const(R,src_index - start,n + 1,length,stream_index);
@@ -121,11 +119,11 @@ __device__ void multi_search(const int* R,const int* C,const int* fvs_vertices,
 	}
 }
 __global__
-void __kernel_multi_search_shuffle_based(const int *R,const int *C,const int *fvs_vertices,const int n,int *d,
-										 const int length,const int stream_index)
+void __kernel_multi_search_shuffle_based(const int *R,const int *C,const int n,int *d,const int length,
+					 const int stream_index)
 {
 	//Since users need to handle this, we can provide default policies or clean up the Queueing interfac
-	multi_search(R,C,fvs_vertices,n,d,length,stream_index);
+	multi_search(R,C,n,d,length,stream_index);
 }
 
 
@@ -140,12 +138,11 @@ float gpu_struct::Kernel_multi_search_helper(int start,int end,int stream_index)
 	timer.Start();
 
 	__kernel_multi_search_shuffle_based<<<min(dimGrid.x,total_length),dimBlock,0,streams[stream_index]>>>(d_row_offset,
-																										  d_columns,
-																										  d_fvs_vertices,
-																										  original_nodes,
-																										  d_precompute_array,
-																										  total_length,
-																										  stream_index);
+														d_columns,
+														original_nodes,
+														d_precompute_array,
+														total_length,
+														stream_index);
 
 	CudaError(cudaStreamSynchronize(streams[stream_index]));
 
