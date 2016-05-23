@@ -181,7 +181,8 @@ int main(int argc,char* argv[])
 	chunk_size = fvs_helper.get_num_elements();
 
 	//construct the initial
-	compressed_trees trees(chunk_size,fvs_helper.get_num_elements(),fvs_array,reduced_graph);
+	//compressed_trees trees(chunk_size,fvs_helper.get_num_elements(),fvs_array,reduced_graph);
+	compressed_trees trees(chunk_size,fvs_helper.get_num_elements(),fvs_array,reduced_graph,allocate_pinned_memory,free_pinned_memory);
 
 	cycle_storage *storage = new cycle_storage(reduced_graph->Nodes);
 

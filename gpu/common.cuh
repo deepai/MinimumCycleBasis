@@ -21,4 +21,10 @@ void init_cuda();
 extern "C"
 size_t configure_grid(int start, int end);
 
+extern "C"
+unsigned* allocate_pinned_memory(int chunk,int nodes);
+
+extern "C"
+void free_pinned_memory(unsigned *);
+
 #endif
