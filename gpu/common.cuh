@@ -27,4 +27,7 @@ unsigned* allocate_pinned_memory(int chunk,int nodes);
 extern "C"
 void free_pinned_memory(unsigned *);
 
+extern "C"
+int calculate_chunk_size(int num_nodes,int num_edges,int size_vector,int nstream);
+
 #endif

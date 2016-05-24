@@ -33,7 +33,7 @@ unsigned getBit(unsigned long long val, int pos)
 }
 
 __global__
-void __kernel_init_edge(const int* __restrict__ d_non_tree_edges,const int* d_edge_offsets,
+void __kernel_init_edge(const int* __restrict__ d_non_tree_edges,const int* __restrict__ d_edge_offsets,
 			int *d_precompute_array,const int* __restrict__ d_fvs_vertices,
 			const unsigned long long *d_si_vector,int start,int end,
 			int stream_index,int chunk_size,int original_nodes,int size_vector,

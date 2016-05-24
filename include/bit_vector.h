@@ -51,19 +51,15 @@ public:
 	inline unsigned get_and_numbers(unsigned long long &val1, unsigned long long &val2)
 	{
 		unsigned long long temp = (val1 & val2);
-		unsigned result = 0;
-
-		int count = 0;
+		unsigned count = 0;
 
 		while(temp != 0)
 		{
 			temp -= (temp & -temp);
-			count++;
+			count ^= 1;
 		}
 
-		result = count%2;
-
-		return result;
+		return count;
 	}
 
 	//Return the actual index of the element containing the offset.
@@ -110,7 +106,6 @@ public:
 	{
 		assert(vector->size == size);
 
-		#pragma omp parallel for
 		for(int i=0;i<size;i++)
 			elements[i] = elements[i]^vector->elements[i];
 	}
@@ -120,9 +115,7 @@ public:
 		unsigned val = 0;
 
 		for(int i=0;i<size;i++)
-		{
-			val = (val + get_and_numbers(elements[i],vector1->elements[i])) % 2;
-		}
+			val ^= get_and_numbers(elements[i],vector1->elements[i]);
 
 		return val;
 	}

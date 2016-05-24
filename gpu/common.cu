@@ -48,3 +48,9 @@ void free_pinned_memory(unsigned *pinned_memory)
 {
 	CudaError(cudaFreeHost(pinned_memory));
 }
+
+extern "C"
+int calculate_chunk_size(int num_nodes,int num_edges,int size_vector,int nstream)
+{
+
+}

@@ -36,6 +36,8 @@ std::string OutputFileDirectory;
 
 double totalTime = 0;
 
+int num_threads;
+
 int main(int argc,char* argv[])
 {
 	if(argc < 4)
@@ -46,7 +48,7 @@ int main(int argc,char* argv[])
 		exit(1);
 	}
 
-	int num_threads = 1;
+	num_threads = 1;
 
 	if(argc == 4)
 		num_threads = atoi(argv[3]);

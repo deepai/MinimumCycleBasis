@@ -43,6 +43,8 @@ double localTime = 0;
 
 stats info;
 
+int num_threads;
+
 int main(int argc,char* argv[])
 {
 	if(argc < 4)
@@ -53,7 +55,7 @@ int main(int argc,char* argv[])
 		exit(1);
 	}
 
-	int num_threads = 1;
+	num_threads = 1;
 
 	if(argc == 4)
 		num_threads = atoi(argv[3]);
@@ -318,6 +320,7 @@ int main(int argc,char* argv[])
 		bit_vector *cycle_vector = final_mcb.back()->get_cycle_vector(non_tree_edges_map,
 																	  initial_spanning_tree->non_tree_edges->size());
 
+		#pragma omp parallel for
 		for(int j=e+1;j<num_non_tree_edges;j++)
 		{
 			unsigned product = cycle_vector->dot_product(support_vectors[j]);
