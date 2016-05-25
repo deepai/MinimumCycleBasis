@@ -39,6 +39,7 @@ unsigned *allocate_pinned_memory(int chunk,int nodes)
 	unsigned *pinned_memory;
 
 	CudaError(cudaMallocHost((void **)&pinned_memory,sizeof(unsigned) * chunk * nodes));
+	//pinned_memory = new unsigned[chunk * nodes];
 
 	return pinned_memory;
 }
@@ -47,6 +48,7 @@ extern "C"
 void free_pinned_memory(unsigned *pinned_memory)
 {
 	CudaError(cudaFreeHost(pinned_memory));
+	//delete[] pinned_memory;
 }
 
 extern "C"

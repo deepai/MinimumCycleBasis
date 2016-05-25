@@ -26,7 +26,7 @@ void gpu_struct::destroy_streams()
 	free(streams);
 }
 
-gpu_struct::~gpu_struct()
+void gpu_struct::clear_memory()
 {
 	CudaError(cudaFree(d_non_tree_edges));
 	CudaError(cudaFree(d_edge_offsets));

@@ -15,17 +15,42 @@ public:
 
 	unsigned long long *elements;
 
+	bool pinned_memory;
+
+	void (*free_pinned_memory)(unsigned *);
+
 	bit_vector(int &n)
 	{	
 		num_elements = n;
 		size = (int)(ceil((double)n/64));
 		elements = new unsigned long long[size];
 		memset(elements,0,sizeof(unsigned long long) * size);
+		pinned_memory = false;
+	}
+
+	bit_vector(int &n,unsigned *(*mem_alloc)(int,int),void (*mem_free)(unsigned *))
+	{
+		num_elements = n;
+		size = (int)(ceil((double)n/64));
+
+		elements = (unsigned long long *)mem_alloc(size,2);
+		memset(elements,0,sizeof(unsigned long long) * size);
+		pinned_memory = true;
+
+		free_pinned_memory = mem_free;
 	}
 
 	~bit_vector()
 	{
-		delete[] elements;
+
+	}
+
+	void clear_memory()
+	{
+		if(!pinned_memory)
+			delete[] elements;
+		else
+			free_pinned_memory((unsigned *)elements);
 	}
 
 	int get_size()

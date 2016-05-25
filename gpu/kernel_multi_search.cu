@@ -65,62 +65,52 @@ unsigned setBit(unsigned val, unsigned toInsert, int pos)
 
 #define Q_THRESHOLD 0
 
-
-__device__ void multi_search(const int* R,const int* C,const int &n,int *d,
-			     const int start,const int end,const int chunk_size,const int &stream_index)
-{
-	int j = threadIdx.x;  //threadId
-	int lane_id = getLaneId();     //lane id;
-	int warp_id = threadIdx.x/32;
-
-	int src_index;
-
-	for(src_index=blockIdx.x*WARP_SIZE + warp_id + start; src_index < end; src_index += (gridDim.x)*WARP_SIZE)
-	{
-		int *d_row = get_pointer(d,src_index - start,n,chunk_size,stream_index);
-
-		const int* __restrict__ r_row = get_pointer_const(R,src_index - start,n + 1,chunk_size,stream_index);
-		const int* __restrict__ c_row = get_pointer_const(C,src_index - start,n,chunk_size,stream_index);
-
-		int k = 0; //current level
-
-		int r,r_end,r_prev;
-
-		while(k < n) //All threads in a warp simultaneously executes nodes in a level.
-		{
-			if(lane_id == 0)
-			{
-				r_prev = __ldg(&r_row[k]);
-				r_end   = __ldg(&r_row[k+1]);
-			}
-
-			r_prev = __shfl(r_prev,0);
-			r_end = __shfl(r_end,0);
-			r = r_prev + lane_id;
-
-			while(r < r_end)
-			{
-				int c = __ldg(&c_row[r]); //c is the index of the parent of the current edge. if c == -1, its the root node
-
-				if(c != -1)
-					d_row[r] = d_row[r] ^ d_row[c];
-
-				r += WARP_SIZE;
-			}
-
-			if(r_prev == r_end)
-				break;
-
-			k++;
-		}
-	}
-}
 __global__
 void __kernel_multi_search_shuffle_based(const int *R,const int *C,const int n,int *d,const int start,
 					 const int end,const int chunk_size,const int stream_index)
 {
-	//Since users need to handle this, we can provide default policies or clean up the Queueing interfac
-	multi_search(R,C,n,d,start,end,chunk_size,stream_index);
+	int lane_id = getLaneId();     //lane id;
+
+	int src_index = start + blockIdx.x*(blockDim.x/32) + threadIdx.x/32;
+
+	if(src_index >= end)
+		return;
+
+	int *d_row = get_pointer(d,src_index - start,n,chunk_size,stream_index);
+
+	const int* __restrict__ r_row = get_pointer_const(R,src_index - start,n + 1,chunk_size,stream_index);
+	const int* __restrict__ c_row = get_pointer_const(C,src_index - start,n,chunk_size,stream_index);
+
+	int k = 1; //current level
+
+	int r,r_end,r_prev;
+
+	while(k < n) //All threads in a warp simultaneously executes nodes in a level.
+	{
+		if(lane_id == 0)
+		{
+			r_prev = __ldg(&r_row[k]);
+			r_end   = __ldg(&r_row[k+1]);
+		}
+
+		r_prev = __shfl(r_prev,0);
+		r_end = __shfl(r_end,0);
+		r = r_prev + lane_id;
+
+		while(r < r_end)
+		{
+			int c = __ldg(&c_row[r]); //c is the index of the parent of the current edge. if c == -1, its the root node
+
+			d_row[r] = d_row[r] ^ d_row[c];
+
+			r += WARP_SIZE;
+		}
+
+		if(r_prev == r_end)
+			break;
+
+		k++;
+	}
 }
 
 
@@ -130,11 +120,9 @@ float gpu_struct::Kernel_multi_search_helper(int start,int end,int stream_index)
 
 	int total_length = end - start;
 
-	//debug("multi",start,end);
-
 	timer.Start();
 
-	__kernel_multi_search_shuffle_based<<<min(dimGrid.x,total_length),dimBlock,0,streams[stream_index]>>>(d_row_offset,
+	__kernel_multi_search_shuffle_based<<<(int)ceil((double)total_length/16),512,0,streams[stream_index]>>>(d_row_offset,
 														d_columns,
 														original_nodes,
 														d_precompute_array,

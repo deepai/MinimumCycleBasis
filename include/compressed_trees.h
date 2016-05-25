@@ -143,7 +143,7 @@ struct compressed_trees
 
 	}
 
-	~compressed_trees()
+	void clear_memory()
 	{
 		for(int i=0;i<num_rows;i++)
 		{

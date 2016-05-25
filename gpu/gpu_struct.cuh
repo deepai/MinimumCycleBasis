@@ -66,7 +66,7 @@ struct gpu_struct
 	float Kernel_init_edges_helper(int start,int end,int stream_index);
 	float Kernel_multi_search_helper(int start,int end,int stream_index);
 
-	~gpu_struct();
+	void clear_memory();
 
 };
 

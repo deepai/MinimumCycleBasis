@@ -39,60 +39,45 @@ void __kernel_init_edge(const int* __restrict__ d_non_tree_edges,const int* __re
 			int stream_index,int chunk_size,int original_nodes,int size_vector,
 			int fvs_size,int num_non_tree_edges,int num_edges)
 {
-	int tid = threadIdx.x;
-	int gid = threadIdx.x + blockDim.x*blockIdx.x;
-
 	int si_index = -1;
 
 	unsigned long long si_value;
 
-	//int per_sm_vtx_count = get_ceil(end - start,gridDim.x);
+	int src_index = blockIdx.x + start;
 
-	for(int src_index=blockIdx.x + start; src_index < end; src_index+=gridDim.x)
+	if(src_index >= end)
+		return;
+
+	int *d_row = get_pointer(d_precompute_array,src_index - start,original_nodes,chunk_size,stream_index);
+	const int* __restrict__ d_edge = get_pointer_const(d_edge_offsets,src_index - start,original_nodes,chunk_size,stream_index);
+
+	for(int edge_index = threadIdx.x; edge_index < original_nodes ; edge_index += blockDim.x)
 	{
-		int *d_row = get_pointer(d_precompute_array,src_index - start,original_nodes,chunk_size,stream_index);
-		const int* __restrict__ d_edge = get_pointer_const(d_edge_offsets,src_index - start,original_nodes,chunk_size,stream_index);
-
-		for(int edge_index = tid; edge_index < original_nodes ; edge_index += blockDim.x)
+		int edge_offset = __ldg(&d_edge[edge_index]);
+		//tree edges
+		if(edge_offset >= 0)
 		{
-			int edge_offset = __ldg(&d_edge[edge_index]);
-			assert(edge_offset < num_edges);
-			//tree edges
-			if(edge_offset >= 0)
-			{
-				int non_tree_edge_loc = __ldg(&d_non_tree_edges[edge_offset]);
-				assert(non_tree_edge_loc < num_non_tree_edges);
+			int non_tree_edge_loc = __ldg(&d_non_tree_edges[edge_offset]);
 
-				//non_tree_edge
-				if(non_tree_edge_loc >= 0)
+			//non_tree_edge
+			if(non_tree_edge_loc >= 0)
+			{
+				int p_idx = non_tree_edge_loc >> 6;
+				if(si_index != p_idx)
 				{
-					int p_idx = non_tree_edge_loc/64;
-					if(si_index < 0)
-					{
-						si_index = p_idx;
-						si_value = __ldg(&d_si_vector[si_index]);
-					}
-					else if(si_index != p_idx)
-					{
-						si_index = p_idx;
-						si_value = __ldg(&d_si_vector[si_index]);
-					}
-
-					d_row[edge_index] = getBit(si_value,non_tree_edge_loc%64);
+					si_index = p_idx;
+					si_value = __ldg(&d_si_vector[si_index]);
 				}
-				else //tree edge
-					d_row[edge_index] = 0;
+				d_row[edge_index] = getBit(si_value,non_tree_edge_loc & 63);
 			}
-			else
-			{
-				assert(edge_offset == -1);
+			else //tree edge
 				d_row[edge_index] = 0;
-			}
 		}
-
-		__syncthreads();
+		else
+		{
+			d_row[edge_index] = 0;
+		}
 	}
-
 }
 
 /**
@@ -115,7 +100,7 @@ float gpu_struct::Kernel_init_edges_helper(int start,int end,int stream_index)
 
 	timer.Start();
 
-	__kernel_init_edge<<<min(dimGrid.x,total_length),dimBlock,0,streams[stream_index]>>>(d_non_tree_edges,
+	__kernel_init_edge<<<total_length,512,0,streams[stream_index]>>>(d_non_tree_edges,
 																					 d_edge_offsets,
 																					 d_precompute_array,
 																					 d_fvs_vertices,

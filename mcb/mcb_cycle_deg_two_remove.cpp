@@ -390,5 +390,13 @@ int main(int argc,char* argv[])
 	debug(transfer_time/1000);
 	debug(gpu_precompute_time/1000);
 
+	device_struct.clear_memory();
+	trees.clear_memory();
+
+	for(int i=0;i<num_non_tree_edges;i++)
+		support_vectors[i]->clear_memory();
+
+	delete[] support_vectors;
+
 	return 0;
 }
