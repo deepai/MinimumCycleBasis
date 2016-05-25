@@ -5,14 +5,14 @@ SRCDIR=src
 EX_INCLUDE = ../include
 
 #DFLAGS = -DMULTI_THREAD -DPRINT -DVERBOSE
-DFLAGS = -DMULTI_THREAD  -DNDEBUG
+DFLAGS = -DMULTI_THREAD  -DNDEBUG -DVERBOSE
 
 CC=g++
 
-CFLAGS=-I$(IDIR) -I$(EX_INCLUDE) -I../ -fopenmp -lgomp $(DFLAGS) -g -w -std=c++11 -fpermissive
-CXXFLAGS = -I$(IDIR) -I$(EX_INCLUDE) -I../ -fopenmp -lgomp $(DFLAGS) -g -w -std=c++11 -fpermissive
+CFLAGS=-I$(IDIR) -I$(EX_INCLUDE) -I../ -fopenmp -lgomp $(DFLAGS) -w -std=c++11 -fpermissive -O3
+CXXFLAGS = -I$(IDIR) -I$(EX_INCLUDE) -I../ -fopenmp -lgomp $(DFLAGS) -w -std=c++11 -fpermissive -O3
 
-NVFLAGS = -arch=sm_35 -Xcompiler -fopenmp -lgomp $(DFLAGS) -w -std=c++11
+NVFLAGS = -arch=sm_35 -lineinfo -Xcompiler -fopenmp -lgomp $(DFLAGS) -w -std=c++11 -O3 -Xptxas -v
 
 NVCC = nvcc $(NVFLAGS) -I$(IDIR) -I$(EX_INCLUDE) -I../
 
