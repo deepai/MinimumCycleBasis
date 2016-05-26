@@ -4,15 +4,15 @@ void gpu_struct::init_memory_setup() {
 	CudaError(cudaMalloc(&d_non_tree_edges, to_byte_32bit(num_edges)));
 	CudaError(
 			cudaMalloc(&d_edge_offsets,
-					to_byte_32bit(chunk_size * original_nodes)));
+					to_byte_32bit(chunk_size * original_nodes * nstreams)));
 	CudaError(
 			cudaMalloc(&d_row_offset,
-					to_byte_32bit(chunk_size * (original_nodes + 1))));
+					to_byte_32bit(chunk_size * (original_nodes + 1) * nstreams)));
 	CudaError(
-			cudaMalloc(&d_columns, to_byte_32bit(chunk_size * original_nodes)));
+			cudaMalloc(&d_columns, to_byte_32bit(chunk_size * original_nodes) * nstreams));
 	CudaError(
 			cudaMalloc(&d_precompute_array,
-					to_byte_32bit(chunk_size * original_nodes)));
+					to_byte_32bit(chunk_size * original_nodes) * nstreams));
 	CudaError(cudaMalloc(&d_si_vector, to_byte_64bit(size_vector)));
 }
 
