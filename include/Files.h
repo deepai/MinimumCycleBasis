@@ -7,26 +7,26 @@
 
 std::vector<std::string> openDirectory(std::string path = ".") {
 
-    DIR*    dir;
-    dirent* pdir;
-    std::vector<std::string> files;
+	DIR* dir;
+	dirent* pdir;
+	std::vector<std::string> files;
 
-    dir = opendir(path.c_str());
+	dir = opendir(path.c_str());
 
-    while (pdir = readdir(dir)) {
-        std::string filename(pdir->d_name);
-        std::string fileExtension ("mtx");
+	while (pdir = readdir(dir)) {
+		std::string filename(pdir->d_name);
+		std::string fileExtension("mtx");
 
-        //debug(filename);
+		//debug(filename);
 
-        if(filename.find(fileExtension)==std::string::npos)
-            continue;
+		if (filename.find(fileExtension) == std::string::npos)
+			continue;
 
-        if((filename.compare(".") != 0) && (filename.compare("..")!= 0))
-          files.push_back(filename);
-    }
-    
-    return files;
+		if ((filename.compare(".") != 0) && (filename.compare("..") != 0))
+			files.push_back(filename);
+	}
+
+	return files;
 }
 
 #endif

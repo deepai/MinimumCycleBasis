@@ -8,8 +8,8 @@
 
 #ifdef __NVCC__
 
-  #include <cuda_runtime.h>
-  #include <cuda.h>
+#include <cuda_runtime.h>
+#include <cuda.h>
 
 #endif
 //the following are UBUNTU/LINUX ONLY terminal color codes.
@@ -35,22 +35,22 @@
 
 #define CudaError(ans) { gpuAssert((ans), __FILE__, __LINE__); }
 inline void gpuAssert(cudaError_t code, const char *file, int line, bool abort =
-    true) {
-  if (code != cudaSuccess) {
-    std::cerr << RED << "Error :" << cudaGetErrorString(code) << " : "
-        << file << " : line No = " << line << RESET << std::endl;
-    // fprintf(stderr,"GPUassert: %s %s %d\n", cudaGetErrorString(code), file, line);
-    if (abort)
-      cudaDeviceReset();
-      exit(code);
-  }
+		true) {
+	if (code != cudaSuccess) {
+		std::cerr << RED << "Error :" << cudaGetErrorString(code) << " : "
+		<< file << " : line No = " << line << RESET << std::endl;
+		// fprintf(stderr,"GPUassert: %s %s %d\n", cudaGetErrorString(code), file, line);
+		if (abort)
+		cudaDeviceReset();
+		exit(code);
+	}
 }
 
 #endif
 
 struct debugger {
 	template<typename T> debugger& operator ,(const T& v) {
-    std::cerr << CYAN << v << " " << RESET ;
+		std::cerr << CYAN << v << " " << RESET;
 		return *this;
 	}
 };
@@ -62,11 +62,10 @@ typedef unsigned long long unsignedLL;
 
 extern debugger dbg;
 
-
 #ifdef VERBOSE
-  #define debug(args...)            {dbg,args; std::cerr<<std::endl;}
+#define debug(args...)            {dbg,args; std::cerr<<std::endl;}
 #else
-  #define debug(args...)            {}
+#define debug(args...)            {}
 #endif 
 
 #endif

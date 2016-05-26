@@ -1,16 +1,15 @@
 /* 
-*   Matrix Market I/O library for ANSI C
-*
-*   See http://math.nist.gov/MatrixMarket for details.
-*
-*
-*/
+ *   Matrix Market I/O library for ANSI C
+ *
+ *   See http://math.nist.gov/MatrixMarket for details.
+ *
+ *
+ */
 
 #ifndef MM_IO_H
 #define MM_IO_H
 
 extern "C" {
-
 
 #define MM_MAX_LINE_LENGTH 1025
 #define MatrixMarketBanner "%%MatrixMarket"
@@ -27,7 +26,6 @@ int mm_read_mtx_array_size(FILE *f, int *M, int *N);
 int mm_write_banner(FILE *f, MM_typecode matcode);
 int mm_write_mtx_crd_size(FILE *f, int M, int N, int nz);
 int mm_write_mtx_array_size(FILE *f, int M, int N);
-
 
 /********************* MM_typecode query fucntions ***************************/
 
@@ -48,8 +46,7 @@ int mm_write_mtx_array_size(FILE *f, int M, int N);
 #define mm_is_skew(typecode)	((typecode)[3]=='K')
 #define mm_is_hermitian(typecode)((typecode)[3]=='H')
 
-int mm_is_valid(MM_typecode matcode);		/* too complex for a macro */
-
+int mm_is_valid(MM_typecode matcode); /* too complex for a macro */
 
 /********************* MM_typecode modify fucntions ***************************/
 
@@ -64,7 +61,6 @@ int mm_is_valid(MM_typecode matcode);		/* too complex for a macro */
 #define mm_set_pattern(typecode)((*typecode)[2]='P')
 #define mm_set_integer(typecode)((*typecode)[2]='I')
 
-
 #define mm_set_symmetric(typecode)((*typecode)[3]='S')
 #define mm_set_general(typecode)((*typecode)[3]='G')
 #define mm_set_skew(typecode)	((*typecode)[3]='K')
@@ -75,9 +71,7 @@ int mm_is_valid(MM_typecode matcode);		/* too complex for a macro */
 
 #define mm_initialize_typecode(typecode) mm_clear_typecode(typecode)
 
-
 /********************* Matrix Market error codes ***************************/
-
 
 #define MM_COULD_NOT_READ_FILE	11
 #define MM_PREMATURE_EOF		12
@@ -87,20 +81,19 @@ int mm_is_valid(MM_typecode matcode);		/* too complex for a macro */
 #define MM_LINE_TOO_LONG		16
 #define MM_COULD_NOT_WRITE_FILE	17
 
-
 /******************** Matrix Market internal definitions ********************
 
-   MM_matrix_typecode: 4-character sequence
+ MM_matrix_typecode: 4-character sequence
 
-				    ojbect 		sparse/   	data        storage 
-						  		dense     	type        scheme
+ ojbect 		sparse/   	data        storage 
+ dense     	type        scheme
 
-   string position:	 [0]        [1]			[2]         [3]
+ string position:	 [0]        [1]			[2]         [3]
 
-   Matrix typecode:  M(atrix)  C(oord)		R(eal)   	G(eneral)
-						        A(array)	C(omplex)   H(ermitian)
-											P(attern)   S(ymmetric)
-								    		I(nteger)	K(kew)
+ Matrix typecode:  M(atrix)  C(oord)		R(eal)   	G(eneral)
+ A(array)	C(omplex)   H(ermitian)
+ P(attern)   S(ymmetric)
+ I(nteger)	K(kew)
 
  ***********************************************************************/
 
@@ -118,20 +111,18 @@ int mm_is_valid(MM_typecode matcode);		/* too complex for a macro */
 #define MM_SKEW_STR		"skew-symmetric"
 #define MM_PATTERN_STR  "pattern"
 
-
 /*  high level routines */
 
 int mm_write_mtx_crd(char fname[], int M, int N, int nz, int I[], int J[],
-		 double val[], MM_typecode matcode);
+		double val[], MM_typecode matcode);
 int mm_read_mtx_crd_data(FILE *f, int M, int N, int nz, int I[], int J[],
 		double val[], MM_typecode matcode);
 int mm_read_mtx_crd_entry(FILE *f, int *I, int *J, double *real, double *img,
-			MM_typecode matcode);
+		MM_typecode matcode);
 
 int mm_read_unsymmetric_sparse(const char *fname, int *M_, int *N_, int *nz_,
-                double **val_, int **I_, int **J_);
+		double **val_, int **I_, int **J_);
 
 }
-
 
 #endif

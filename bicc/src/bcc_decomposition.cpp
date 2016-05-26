@@ -20,7 +20,6 @@
 #include <list>
 #include <unordered_set>
 
-
 #include "bicc.h"
 #include "dfs.h"
 #include "connected_component.h"
@@ -46,16 +45,17 @@ double totalTime = 0;
 
 bool keep_bridges = 1;
 
-int main(int argc,char* argv[])
-{
-	if(argc < 5)
-	{
+int main(int argc, char* argv[]) {
+	if (argc < 5) {
 		printf("Ist Argument should indicate the InputFile\n");
 		printf("2nd Argument should indicate the outputdirectory\n");
-		printf("3rd Argument should indicate the degree of pruning into bccs.\n");
+		printf(
+				"3rd Argument should indicate the degree of pruning into bccs.\n");
 		printf("4th Argument should indicate the number of nodes.\n");
-		printf("5th Argument should indicate whether we should keep the bridges. i.e. 0 or 1 (True default)\n");
-		printf("6th argument should indicate the number of threads.(Optional) (1 default)\n");
+		printf(
+				"5th Argument should indicate whether we should keep the bridges. i.e. 0 or 1 (True default)\n");
+		printf(
+				"6th argument should indicate the number of threads.(Optional) (1 default)\n");
 		exit(1);
 	}
 
@@ -63,13 +63,13 @@ int main(int argc,char* argv[])
 
 	keep_bridges = atoi(argv[5]);
 
-	if(argc == 7)
+	if (argc == 7)
 		num_threads = atoi(argv[6]);
 
-    	omp_set_num_threads(num_threads);
+	omp_set_num_threads(num_threads);
 
-        InputFileName = argv[1];
-        OutputFileDirectory = argv[2];
+	InputFileName = argv[1];
+	OutputFileDirectory = argv[2];
 
 	int degree_pruning = atoi(argv[3]);
 	int global_nodes_count = atoi(argv[4]);
@@ -80,31 +80,30 @@ int main(int argc,char* argv[])
 	//Read the Inputfile.
 	FileReader Reader(InputFilePath.c_str());
 
-	int v1,v2,Initial_Vertices,weight;;
+	int v1, v2, Initial_Vertices, weight;
+	;
 
-	int nodes,edges;
+	int nodes, edges;
 
 	//firt line of the input file contains the number of nodes and edges
-	Reader.get_nodes_edges(nodes,edges); 
+	Reader.get_nodes_edges(nodes, edges);
 
-	bicc_graph *graph=new bicc_graph(nodes);
+	bicc_graph *graph = new bicc_graph(nodes);
 
 	/*
 	 * ====================================================================================
 	 * Fill Edges.
 	 * ====================================================================================
 	 */
-	for(int i=0;i<edges;i++)
-	{
-		Reader.read_edge(v1,v2,weight);
-		graph->insert_edge(v1,v2,weight,false);
+	for (int i = 0; i < edges; i++) {
+		Reader.read_edge(v1, v2, weight);
+		graph->insert_edge(v1, v2, weight, false);
 	}
 
 	graph->calculate_nodes_edges();
 	graph->initialize_bicc_numbers();
 
 	Reader.fileClose();
-
 
 	debug("Input File Reading Complete...\n");
 
@@ -118,20 +117,21 @@ int main(int argc,char* argv[])
 	int new_component_number = 1;
 
 	//This datastructure is used to hold edge_lists corresponding to each component number
-	std::unordered_map<int,std::list<int>* > edge_list_component;
+	std::unordered_map<int, std::list<int>*> edge_list_component;
 
 	//This datastructure is used to hold the vertex lists corresponding to each component number.
-	std::unordered_map<int,int> src_vtx_component;
+	std::unordered_map<int, int> src_vtx_component;
 
 	//Initialize the starting source vertex for component 1.
-	src_vtx_component[1]=0;
+	src_vtx_component[1] = 0;
 
 	/*
 	 * ====================================================================================
 	 * Edge_Map stores the mapping from <src,dest> => edge_index for the initial graph.
 	 * ====================================================================================
 	 */
-	std::unordered_map<unsigned long long,int> *edge_map = create_map(graph->c_graph);
+	std::unordered_map<unsigned long long, int> *edge_map = create_map(
+			graph->c_graph);
 
 	/*
 	 * ====================================================================================
@@ -141,7 +141,7 @@ int main(int argc,char* argv[])
 	 */
 	std::vector<dfs_helper*> vec_dfs_helper;
 
-	for(int i=0; i<num_threads; i++)
+	for (int i = 0; i < num_threads; i++)
 		vec_dfs_helper.push_back(new dfs_helper(global_nodes_count));
 
 	debug("Initialization of the graph completed.\n");
@@ -151,10 +151,10 @@ int main(int argc,char* argv[])
 	 * Invoke connected_component for the first run on the Input Graph.
 	 * ==========================================================================================
 	 */
-	int num_components = obtain_connected_components(component_number,new_component_number,graph,
-		vec_dfs_helper[0],edge_map);
+	int num_components = obtain_connected_components(component_number,
+			new_component_number, graph, vec_dfs_helper[0], edge_map);
 
-	debug("Obtained the Initial Connected Components :",num_components);
+	debug("Obtained the Initial Connected Components :", num_components);
 
 	edge_list_component.clear();
 	src_vtx_component.clear();
@@ -165,13 +165,12 @@ int main(int argc,char* argv[])
 	 * source vertex.
 	 * ==========================================================================================
 	 */
-	graph->collect_edges_component(component_number + 1,new_component_number,edge_list_component,
-		src_vtx_component);
+	graph->collect_edges_component(component_number + 1, new_component_number,
+			edge_list_component, src_vtx_component);
 
 	double _counter_init = globalTimer.start_timer();
 
-
-	assert( !src_vtx_component.empty() );
+	assert(!src_vtx_component.empty());
 
 	bool flag = true;
 	/*
@@ -185,9 +184,9 @@ int main(int argc,char* argv[])
 
 	std::vector<int> component_list;
 
-	for(std::unordered_map<int,std::list<int>* >::iterator it=edge_list_component.begin();
-		it!=edge_list_component.end();it++)
-	{
+	for (std::unordered_map<int, std::list<int>*>::iterator it =
+			edge_list_component.begin(); it != edge_list_component.end();
+			it++) {
 		component_list.push_back(it->first);
 	}
 
@@ -196,8 +195,7 @@ int main(int argc,char* argv[])
 	double time_dfs = 0;
 	double time_pruning = 0;
 
-	while( flag )
-	{
+	while (flag) {
 		num_iterations++;
 
 		flag = false;
@@ -208,20 +206,20 @@ int main(int argc,char* argv[])
 
 		double _local_time_dfs = globalTimer.start_timer();
 
-		#pragma omp parallel for
-		for(int i=0; i<component_list.size(); i++)
-		{
+#pragma omp parallel for
+		for (int i = 0; i < component_list.size(); i++) {
 			int thread_id = omp_get_thread_num();
 
-			if(finished_components.find(component_list[i]) != finished_components.end())
+			if (finished_components.find(component_list[i])
+					!= finished_components.end())
 				continue;
 
 			//debug("Active component DFS:",component_list[i],src_vtx_component[component_list[i]] + 1);
 
-			int num_bridges = dfs_bicc_initializer(src_vtx_component[component_list[i]],
-				component_list[i],new_component_number,graph,vec_dfs_helper[thread_id],
-				edge_map,edge_list_component,keep_bridges);
-
+			int num_bridges = dfs_bicc_initializer(
+					src_vtx_component[component_list[i]], component_list[i],
+					new_component_number, graph, vec_dfs_helper[thread_id],
+					edge_map, edge_list_component, keep_bridges);
 
 			global_num_bridges += num_bridges;
 		}
@@ -229,7 +227,6 @@ int main(int argc,char* argv[])
 		time_dfs += (globalTimer.stop_timer() - _local_time_dfs);
 
 		src_vtx_component.clear();
-
 
 		/*
 		 * ====================================================================
@@ -246,12 +243,12 @@ int main(int argc,char* argv[])
 
 		component_list.clear();
 
-		for(std::unordered_map<int,std::list<int>* >::iterator it=edge_list_component.begin();					
-			it!=edge_list_component.end();it++)
-		{
+		for (std::unordered_map<int, std::list<int>*>::iterator it =
+				edge_list_component.begin(); it != edge_list_component.end();
+				it++) {
 			int edge_end_point = graph->c_graph->rows->at(it->second->front());
 			src_vtx_component[it->first] = edge_end_point;
-			
+
 			component_list.push_back(it->first);
 		}
 
@@ -262,32 +259,33 @@ int main(int argc,char* argv[])
 		 * Parallely prune the edge lists and update the finished component 
 		 * ====================================================================
 		 */
-		 double _local_time_pruning = globalTimer.start_timer();
+		double _local_time_pruning = globalTimer.start_timer();
 
-		#pragma omp parallel for
-		for(int i=0; i<component_list.size(); i++)
-		{
+#pragma omp parallel for
+		for (int i = 0; i < component_list.size(); i++) {
 			int thread_id = omp_get_thread_num();
 
 			//debug("Active component Prune:",component_list[i],src_vtx_component[component_list[i]] + 1);
 
-			if( finished_components.find(component_list[i]) != finished_components.end() )
+			if (finished_components.find(component_list[i])
+					!= finished_components.end())
 				continue;
 
 			int num_edges = 0;
-			num_edges += graph->prune_edges(degree_pruning,component_list[i],
-				edge_list_component[component_list[i]],edge_map,src_vtx_component);
+			num_edges += graph->prune_edges(degree_pruning, component_list[i],
+					edge_list_component[component_list[i]], edge_map,
+					src_vtx_component);
 
-			if(num_edges == 0)
-				list_finished_components[thread_id].push_back(component_list[i]);
+			if (num_edges == 0)
+				list_finished_components[thread_id].push_back(
+						component_list[i]);
 
 			global_edges_removed += num_edges;
 
 			//debug("number of edges removed:",thread_id,num_edges);
 
-			if(num_edges != 0)
-			{
-			#pragma omp critical
+			if (num_edges != 0) {
+#pragma omp critical
 				flag = 1;
 			}
 		}
@@ -299,47 +297,44 @@ int main(int argc,char* argv[])
 		 * Insert the finished component Ids into the finished components list.
 		 * ====================================================================
 		 */
-		for(int i=0; i<num_threads ;i++)
-		{
-			for(std::list<int>::iterator it=list_finished_components[i].begin();
-				it!=list_finished_components[i].end();it++)
-			{
+		for (int i = 0; i < num_threads; i++) {
+			for (std::list<int>::iterator it =
+					list_finished_components[i].begin();
+					it != list_finished_components[i].end(); it++) {
 				finished_components.insert(*it);
 			}
 			list_finished_components[i].clear();
 		}
 
-
 	}
 
-	debug("Num Iterations:",num_iterations);
+	debug("Num Iterations:", num_iterations);
 
 	double _counter_exit = globalTimer.stop_timer();
 
 	totalTime += (_counter_exit - _counter_init);
 
-	debug("Total Number of Components in the current file =",finished_components.size());
+	debug("Total Number of Components in the current file =",
+			finished_components.size());
 
-	graph->print_to_a_file(global_output_file_count,OutputFileDirectory,global_nodes_count,finished_components);
+	graph->print_to_a_file(global_output_file_count, OutputFileDirectory,
+			global_nodes_count, finished_components);
 
 	delete graph;
 	edge_list_component.clear();
 	src_vtx_component.clear();
 	vec_dfs_helper.clear();
 
-	debug("Total dfs time:",time_dfs);
-	debug("Total pruning time:",time_pruning);
-	
-	debug("Total Edges Removed:",global_edges_removed);
-	debug("Total Number of Bridges",global_num_bridges);
-	debug("Total Number of components",global_output_file_count);
+	debug("Total dfs time:", time_dfs);
+	debug("Total pruning time:", time_pruning);
 
-	printf("%d\n",global_edges_removed);
-	printf("%lf\n",totalTime);
+	debug("Total Edges Removed:", global_edges_removed);
+	debug("Total Number of Bridges", global_num_bridges);
+	debug("Total Number of components", global_output_file_count);
+
+	printf("%d\n", global_edges_removed);
+	printf("%lf\n", totalTime);
 
 	return 0;
 }
-
-
-
 

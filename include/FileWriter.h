@@ -6,64 +6,55 @@
 #include <iostream>
 #include "utils.h"
 
-extern "C"
-{ 
-  #include "mmio.h"
+extern "C" {
+#include "mmio.h"
 }
 
-class FileWriter
-{
-  FILE *OutputFileName;
-  MM_typecode matcode;
+class FileWriter {
+	FILE *OutputFileName;
+	MM_typecode matcode;
 
-  int ret_code;
+	int ret_code;
 
-  int M,N,Edges;
+	int M, N, Edges;
 
-  inline void ERROR(char *ch)
-  {
-      std::cerr << RED << ch << " " << RESET;
-  }
-
+	inline void ERROR(char *ch) {
+		std::cerr << RED << ch << " " << RESET;
+	}
 
 public:
 
-  FileWriter(const char *OutputFile,int Nodes,int NZ)
-  {
-    M = Nodes;
-    Edges = NZ;
+	FileWriter(const char *OutputFile, int Nodes, int NZ) {
+		M = Nodes;
+		Edges = NZ;
 
-    if((OutputFileName = fopen(OutputFile, "w")) == NULL) 
-    {
-      ERROR("Unable to open file.\n");
-      printf("filename = %s\n",OutputFile);
-      exit(1);
-    }
+		if ((OutputFileName = fopen(OutputFile, "w")) == NULL) {
+			ERROR("Unable to open file.\n");
+			printf("filename = %s\n", OutputFile);
+			exit(1);
+		}
 
-    mm_initialize_typecode(&matcode);
-    mm_set_matrix(&matcode);
-    mm_set_coordinate(&matcode);
-    mm_set_integer(&matcode);
-    mm_set_symmetric(&matcode);
+		mm_initialize_typecode(&matcode);
+		mm_set_matrix(&matcode);
+		mm_set_coordinate(&matcode);
+		mm_set_integer(&matcode);
+		mm_set_symmetric(&matcode);
 
-    mm_write_banner(OutputFileName, matcode);
-    mm_write_mtx_crd_size(OutputFileName,Nodes,Nodes,Edges);
-  }
+		mm_write_banner(OutputFileName, matcode);
+		mm_write_mtx_crd_size(OutputFileName, Nodes, Nodes, Edges);
+	}
 
-  void write_edge(int u,int v,int weight)
-  {
-    fprintf(OutputFileName, "%d %d %d\n", u + 1,v + 1,weight);
-  }
+	void write_edge(int u, int v, int weight) {
+		fprintf(OutputFileName, "%d %d %d\n", u + 1, v + 1, weight);
+	}
 
-  FILE *get_file()
-  {
-    return OutputFileName;
-  }
+	FILE *get_file() {
+		return OutputFileName;
+	}
 
-  void fileClose()
-  {
-    fclose(OutputFileName);
-  }
+	void fileClose() {
+		fclose(OutputFileName);
+	}
 
 };
 

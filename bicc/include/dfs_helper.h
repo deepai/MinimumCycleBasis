@@ -1,8 +1,7 @@
 #ifndef DFS_HELPER_H
 #define DFS_HELPER_H
 
-struct dfs_helper
-{
+struct dfs_helper {
 	const int NIL = -1;
 
 	int Nodes;
@@ -15,8 +14,7 @@ struct dfs_helper
 
 	unsigned char *status;
 
-	dfs_helper(int N)
-	{
+	dfs_helper(int N) {
 		Nodes = N;
 
 		low = new int[Nodes];
@@ -27,30 +25,27 @@ struct dfs_helper
 		initialize_arrays();
 	}
 
-	void initialize_arrays()
-	{
-		for(int i=0; i<Nodes; i++)
-		{
+	void initialize_arrays() {
+		for (int i = 0; i < Nodes; i++) {
 			low[i] = NIL;
 			discovery[i] = NIL;
 			parent[i] = NIL;
 			status[i] = 0;
 		}
 
-		while(!_stack.empty())
+		while (!_stack.empty())
 			_stack.pop();
 	}
 
-	~dfs_helper()
-	{
+	~dfs_helper() {
 		delete[] low;
 		delete[] discovery;
 		delete[] parent;
 		delete[] status;
 
-		while(!_stack.empty())
+		while (!_stack.empty())
 			_stack.pop();
 	}
 };
-	
+
 #endif
