@@ -60,7 +60,14 @@ struct gpu_struct {
 
 	void initialize_memory(gpu_task *host_memory);
 	float copy_support_vector(bit_vector *vector);
+
+	void transfer_from_asynchronous(int start, int end, int fvs_index,
+			int stream_index, gpu_task *host_memory);
+
 	float fetch(gpu_task *host_memory);
+
+	void transfer_to_asynchronous(int start, int end, int fvs_index,
+			int stream_index, gpu_task *host_memory);
 
 	float Kernel_init_edges_helper(int start, int end, int stream_index);
 	float Kernel_multi_search_helper(int start, int end, int stream_index);

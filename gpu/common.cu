@@ -45,7 +45,23 @@ extern "C" void free_pinned_memory(unsigned *pinned_memory) {
 	//delete[] pinned_memory;
 }
 
-extern "C" int calculate_chunk_size(int num_nodes, int num_edges,
-		int size_vector, int nstream) {
+extern "C" size_t calculate_chunk_size(size_t num_nodes, size_t num_edges,
+		size_t size_vector, size_t nstream) {
+	size_t global_storage_bytes = prop.totalGlobalMem;
+	size_t static_storage_bytes = calculate_32bit(
+			num_edges) + calculate_64bit(size_vector);
 
+	size_t remaining_storage_bytes = global_storage_bytes
+			- static_storage_bytes;
+	size_t total_elem_avl = remaining_storage_bytes / 4;
+
+	size_t max_chunk_size = total_elem_avl / (nstream * (num_nodes * 4 + 1));
+
+	debug("global_storage_bytes", global_storage_bytes);
+	debug("static_storage_bytes", static_storage_bytes);
+	debug("remaining_storage_bytes", remaining_storage_bytes);
+	debug("total_elem_avl", total_elem_avl);
+	debug("max_chunk_size", max_chunk_size);
+
+	return max_chunk_size;
 }
