@@ -182,7 +182,7 @@ int main(int argc, char* argv[]) {
 	calculate_chunk_size(reduced_graph->Nodes, non_tree_edges_map.size(),
 			(int) (ceil((double) num_non_tree_edges / 64)), 32);
 
-	chunk_size = fvs_helper.get_num_elements();
+	chunk_size = (int)(ceil((double)fvs_helper.get_num_elements()/nstreams));
 
 	//construct the initial
 	//compressed_trees trees(chunk_size,fvs_helper.get_num_elements(),fvs_array,reduced_graph);

@@ -7,12 +7,13 @@ void gpu_struct::init_memory_setup() {
 					to_byte_32bit(chunk_size * original_nodes * nstreams)));
 	CudaError(
 			cudaMalloc(&d_row_offset,
-					to_byte_32bit(chunk_size * (original_nodes + 1) * nstreams)));
+					to_byte_32bit(
+							chunk_size * (original_nodes + 1) * nstreams)));
 	CudaError(
-			cudaMalloc(&d_columns, to_byte_32bit(chunk_size * original_nodes) * nstreams));
-	CudaError(
-			cudaMalloc(&d_precompute_array,
+			cudaMalloc(&d_columns,
 					to_byte_32bit(chunk_size * original_nodes) * nstreams));
+	CudaError(cudaMalloc(&d_precompute_array,
+	to_byte_32bit(chunk_size * original_nodes) * nstreams));
 	CudaError(cudaMalloc(&d_si_vector, to_byte_64bit(size_vector)));
 }
 
@@ -53,11 +54,14 @@ void gpu_struct::calculate_memory() {
 	static_memory_bytes += to_byte_32bit(num_edges);
 	static_memory_bytes += to_byte_64bit(size_vector);
 
-	variable_memory_bytes += to_byte_32bit(chunk_size * original_nodes);
-	variable_memory_bytes += to_byte_32bit(chunk_size * (original_nodes + 1));
-	variable_memory_bytes += to_byte_32bit(chunk_size * original_nodes);
-	variable_memory_bytes += to_byte_32bit(chunk_size * original_nodes);
-	variable_memory_bytes += to_byte_32bit(fvs_size);
+	variable_memory_bytes += to_byte_32bit(
+			chunk_size * original_nodes * nstreams);
+	variable_memory_bytes += to_byte_32bit(
+			chunk_size * (original_nodes + 1) * nstreams);
+	variable_memory_bytes += to_byte_32bit(
+			chunk_size * original_nodes * nstreams);
+	variable_memory_bytes += to_byte_32bit(
+			chunk_size * original_nodes * nstreams);
 
 	total_memory_bytes += static_memory_bytes + variable_memory_bytes;
 
@@ -68,10 +72,12 @@ void gpu_struct::calculate_memory() {
 }
 
 void gpu_struct::initialize_memory(gpu_task *host_memory) {
+
 	CudaError(
 			cudaMemcpy(d_non_tree_edges, host_memory->non_tree_edges_array,
 					to_byte_32bit(num_edges), cudaMemcpyHostToDevice));
 
+<<<<<<< HEAD
 	CudaError(
 			cudaMemcpy(d_edge_offsets, host_memory->host_tree->edge_offset[0],
 					to_byte_32bit(chunk_size * original_nodes),
@@ -86,6 +92,27 @@ void gpu_struct::initialize_memory(gpu_task *host_memory) {
 			cudaMemcpy(d_columns, host_memory->host_tree->tree_cols[0],
 					to_byte_32bit(chunk_size * original_nodes),
 					cudaMemcpyHostToDevice));
+=======
+	for (int i = 0; i < nstreams; i++) {
+		CudaError(
+				cudaMemcpy(d_edge_offsets + chunk_size * original_nodes * i,
+						host_memory->host_tree->edge_offset[i],
+						to_byte_32bit(chunk_size * original_nodes),
+						cudaMemcpyHostToDevice));
+
+		CudaError(
+				cudaMemcpy(d_row_offset + chunk_size * (original_nodes + 1) * i,
+						host_memory->host_tree->tree_rows[i],
+						to_byte_32bit(chunk_size * (original_nodes + 1)),
+						cudaMemcpyHostToDevice));
+
+		CudaError(
+				cudaMemcpy(d_columns + chunk_size * original_nodes * i,
+						host_memory->host_tree->tree_cols[i],
+						to_byte_32bit(chunk_size * original_nodes),
+						cudaMemcpyHostToDevice));
+	}
+>>>>>>> working implementation of single thread based memory copy.
 }
 
 float gpu_struct::copy_support_vector(bit_vector *vector) {
@@ -103,53 +130,57 @@ float gpu_struct::copy_support_vector(bit_vector *vector) {
 float gpu_struct::fetch(gpu_task *host_memory) {
 	timer.Start();
 
-	CudaError(
-			cudaMemcpy(host_memory->host_tree->precompute_value[0],
-					d_precompute_array,
-					to_byte_32bit(chunk_size * original_nodes),
-					cudaMemcpyDeviceToHost));
+	for (int i = 0; i < nstreams; i++) {
+		CudaError(
+				cudaMemcpy(host_memory->host_tree->precompute_value[i],
+						d_precompute_array + chunk_size * original_nodes * i,
+						to_byte_32bit(chunk_size * original_nodes),
+						cudaMemcpyDeviceToHost));
+	}
 
 	timer.Stop();
 
 	return timer.Elapsed();
 }
 
-void gpu_struct::transfer_from_asynchronous(int start, int end, int fvs_index,
+void gpu_struct::transfer_from_asynchronous(int start, int end,
 		int stream_index, gpu_task *host_memory) {
+
 	CudaError(
 			cudaMemcpyAsync(
 					d_edge_offsets + stream_index * chunk_size * original_nodes,
-					host_memory->host_tree->edge_offset[fvs_index],
+					host_memory->host_tree->edge_offset[stream_index],
 					to_byte_32bit(
 							min(end - start, chunk_size) * original_nodes),
-					cudaMemcpyHostToDevice, streams[stream_index]));
+					cudaMemcpyHostToDevice, CU_STREAM_PER_THREAD));
 
 	CudaError(
 			cudaMemcpyAsync(
 					d_row_offset
 							+ stream_index * chunk_size * (original_nodes + 1),
-					host_memory->host_tree->tree_rows[fvs_index],
+					host_memory->host_tree->tree_rows[stream_index],
 					to_byte_32bit(
 							min(end - start, chunk_size)
 									* (original_nodes + 1)),
-					cudaMemcpyHostToDevice, streams[stream_index]));
+					cudaMemcpyHostToDevice, CU_STREAM_PER_THREAD));
 
 	CudaError(
 			cudaMemcpyAsync(
 					d_columns + stream_index * chunk_size * original_nodes,
-					host_memory->host_tree->tree_cols[fvs_index],
+					host_memory->host_tree->tree_cols[stream_index],
 					to_byte_32bit(
 							min(end - start, chunk_size) * original_nodes),
-					cudaMemcpyHostToDevice, streams[stream_index]));
+					cudaMemcpyHostToDevice, CU_STREAM_PER_THREAD));
 }
 
-void gpu_struct::transfer_to_asynchronous(int start, int end, int fvs_index,
-		int stream_index, gpu_task *host_memory) {
+void gpu_struct::transfer_to_asynchronous(int start, int end, int stream_index,
+		gpu_task *host_memory) {
 	CudaError(
-			cudaMemcpyAsync(host_memory->host_tree->precompute_value[fvs_index],
+			cudaMemcpyAsync(
+					host_memory->host_tree->precompute_value[stream_index],
 					d_precompute_array
 							+ stream_index * chunk_size * original_nodes,
 					to_byte_32bit(
 							min(end - start, chunk_size) * original_nodes),
-					cudaMemcpyDeviceToHost, streams[stream_index]));
+					cudaMemcpyDeviceToHost, CU_STREAM_PER_THREAD));
 }
