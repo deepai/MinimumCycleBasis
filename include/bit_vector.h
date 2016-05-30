@@ -32,7 +32,6 @@ public:
 		size = (int) (ceil((double) n / 64));
 
 		elements = (unsigned long long *) mem_alloc(size, 2);
-		memset(elements, 0, sizeof(unsigned long long) * size);
 		pinned_memory = true;
 
 		free_pinned_memory = mem_free;
@@ -40,6 +39,11 @@ public:
 
 	~bit_vector() {
 
+	}
+
+	void init_zero()
+	{
+		memset(elements, 0, sizeof(unsigned long long) * size);
 	}
 
 	void clear_memory() {
@@ -79,6 +83,11 @@ public:
 		return count;
 	}
 
+	void copy_vector(const bit_vector *src_vector)
+	{
+		memcpy(elements,src_vector->elements,sizeof(unsigned long long) * size);
+	}
+
 	//Return the actual index of the element containing the offset.
 	inline unsigned long long &get_element_for_pos(int &pos) {
 		int index = pos / 64;
@@ -108,7 +117,7 @@ public:
 
 	inline void set_bit(int pos, bool val) {
 		unsigned long long &item = get_element_for_pos(pos);
-		int offset = pos % 64;
+		int offset = pos & 63;
 
 		unsigned long long or_number = get_or_number(offset, val);
 
@@ -142,7 +151,7 @@ public:
 	//get bit value at the position pos such that pos belongs to [0- num_elements - 1]
 	inline unsigned get_bit(int pos) {
 		unsigned long long &item = get_element_for_pos(pos);
-		int offset = pos % 64;
+		int offset = pos & 63;
 
 		unsigned val = (item >> offset) & 1;
 		return val;

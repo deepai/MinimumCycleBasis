@@ -280,19 +280,17 @@ int main(int argc, char* argv[]) {
 	double kernel_multi_search_time = 0;
 	double transfer_time = 0;
 
+	bit_vector *cycle_vector = new bit_vector(num_non_tree_edges,allocate_pinned_memory,free_pinned_memory);
+	bit_vector *current_vector = new bit_vector(num_non_tree_edges,allocate_pinned_memory,free_pinned_memory);
+
+	current_vector->init_zero();
+	current_vector->set_bit(0, true);
+
 	//Main Outer Loop of the Algorithm.
 	for (int e = 0; e < num_non_tree_edges; e++) {
 		//globalTimer.start_timer();
 
-		transfer_time += device_struct.copy_support_vector(support_vectors[e]);
-
-		//#pragma omp parallel for
-		//for(int i=0;i<num_threads;i++)
-		//{
-		//	multi_work[i]->precompute_supportVec(non_tree_edges_map,*support_vectors[e]);
-		//}
-
-		//precompute_time += globalTimer.get_event_time();
+		transfer_time += device_struct.copy_support_vector(current_vector);
 
 		kernel_init_time += device_struct.Kernel_init_edges_helper(0,
 				gpu_compute.fvs_size, 0);
@@ -328,7 +326,7 @@ int main(int argc, char* argv[]) {
 			col = reduced_graph->columns->at(edge_offset);
 
 			if (non_tree_edges_map[edge_offset] >= 0) {
-				bit = support_vectors[e]->get_bit(
+				bit = current_vector->get_bit(
 						non_tree_edges_map[edge_offset]);
 			}
 
@@ -345,20 +343,26 @@ int main(int argc, char* argv[]) {
 		cycle_inspection_time += globalTimer.get_event_time();
 		globalTimer.start_timer();
 
-		bit_vector *cycle_vector = final_mcb.back()->get_cycle_vector(
-				non_tree_edges_map,
-				initial_spanning_tree->non_tree_edges->size());
+		final_mcb.back()->get_cycle_vector(non_tree_edges_map,
+				initial_spanning_tree->non_tree_edges->size(),
+				cycle_vector);
 
-#pragma omp parallel for
+	#pragma omp parallel for
 		for (int j = e + 1; j < num_non_tree_edges; j++) {
 			unsigned product = cycle_vector->dot_product(support_vectors[j]);
 			if (product == 1)
-				support_vectors[j]->do_xor(support_vectors[e]);
+				support_vectors[j]->do_xor(current_vector);
 		}
+
+		if( e < num_non_tree_edges - 1 )
+			current_vector->copy_vector(support_vectors[e+1]);
 
 		independence_test_time += globalTimer.get_event_time();
 
 	}
+
+	cycle_vector->clear_memory();
+	current_vector->clear_memory();
 
 	list_cycle.clear();
 
