@@ -33,8 +33,6 @@ struct gpu_struct {
 
 	unsigned long long *d_si_vector;
 
-	cudaStream_t* streams;
-
 	gpu_struct(int num_edges, int num_non_tree_edges, int size_vector,
 			int original_nodes, int fvs_size, int chunk_size, int nstreams) {
 		this->num_non_tree_edges = num_non_tree_edges;
@@ -47,32 +45,28 @@ struct gpu_struct {
 
 		init_memory_setup();
 		init_pitch();
-		init_streams();
 	}
 
 	void init_memory_setup();
 	void init_pitch();
-
-	void init_streams();
-	void destroy_streams();
 
 	void calculate_memory();
 
 	void initialize_memory(gpu_task *host_memory);
 	float copy_support_vector(bit_vector *vector);
 
-	void transfer_from_asynchronous(int start, int end, int stream_index,
-				        gpu_task *host_memory);
+	void transfer_from_asynchronous(int stream_index, gpu_task *host_memory);
 
 	float fetch(gpu_task *host_memory);
 
-	void transfer_to_asynchronous(int start, int end, int stream_index,
-				      gpu_task *host_memory);
+	void transfer_to_asynchronous(int stream_index, gpu_task *host_memory);
 
-	float Kernel_init_edges_helper(int start, int end, int stream_index);
-	float Kernel_multi_search_helper(int start, int end, int stream_index);
+	void Kernel_init_edges_helper(int start, int end, int stream_index);
+	void Kernel_multi_search_helper(int start, int end, int stream_index);
 
 	void clear_memory();
+
+	float process_shortest_path(gpu_task *host_memory,bool multiple_transfer);
 
 };
 

@@ -41,7 +41,8 @@ public:
 
 	}
 
-	void init_zero() {
+	void init_zero()
+	{
 		memset(elements, 0, sizeof(unsigned long long) * size);
 	}
 

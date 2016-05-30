@@ -179,10 +179,21 @@ int main(int argc, char* argv[]) {
 						non_tree_edges_map[reduced_graph->reverse_edge->at(i)];
 	}
 
-	calculate_chunk_size(reduced_graph->Nodes, non_tree_edges_map.size(),
-			(int) (ceil((double) num_non_tree_edges / 64)), 32);
+	int max_chunk_size = calculate_chunk_size(reduced_graph->Nodes, non_tree_edges_map.size(),
+			(int) (ceil((double) num_non_tree_edges / 64)), nstreams);
 
 	chunk_size = (int)(ceil((double)fvs_helper.get_num_elements()/nstreams));
+
+	bool multiple_transfers = true;
+
+	if(chunk_size <= max_chunk_size)
+	{
+		multiple_transfers = false;
+
+		debug("Multiple transfers are turned off and the entire graph is copied first.");
+	}
+
+
 
 	//construct the initial
 	//compressed_trees trees(chunk_size,fvs_helper.get_num_elements(),fvs_array,reduced_graph);
@@ -266,19 +277,18 @@ int main(int argc, char* argv[]) {
 
 	configure_grid(0, gpu_compute.fvs_size);
 
-	device_struct.initialize_memory(&gpu_compute);
-	device_struct.calculate_memory();
+	//device_struct.calculate_memory();
 
 	std::vector<cycle*> final_mcb;
 
 	double precompute_time = 0;
 	double cycle_inspection_time = 0;
 	double independence_test_time = 0;
-	double gpu_precompute_time = 0;
 
-	double kernel_init_time = 0;
-	double kernel_multi_search_time = 0;
-	double transfer_time = 0;
+	if(!multiple_transfers)
+		device_struct.initialize_memory(&gpu_compute);
+
+	//bit_vector *cycle_vector = new bit_vector(num_non_tree_edges,allocate_pinned_memory,free_pinned_memory);
 
 	bit_vector *cycle_vector = new bit_vector(num_non_tree_edges,
 			allocate_pinned_memory, free_pinned_memory);
@@ -292,14 +302,8 @@ int main(int argc, char* argv[]) {
 	for (int e = 0; e < num_non_tree_edges; e++) {
 		//globalTimer.start_timer();
 
-		transfer_time += device_struct.copy_support_vector(current_vector);
-
-		kernel_init_time += device_struct.Kernel_init_edges_helper(0,
-				gpu_compute.fvs_size, 0);
-		kernel_multi_search_time += device_struct.Kernel_multi_search_helper(0,
-				gpu_compute.fvs_size, 0);
-
-		transfer_time += device_struct.fetch(&gpu_compute);
+		precompute_time += device_struct.copy_support_vector(current_vector);
+		precompute_time += device_struct.process_shortest_path(&gpu_compute,multiple_transfers);
 
 		globalTimer.start_timer();
 
@@ -366,10 +370,7 @@ int main(int argc, char* argv[]) {
 
 	list_cycle.clear();
 
-	gpu_precompute_time = kernel_init_time + kernel_multi_search_time
-			+ transfer_time;
-
-	info.setPrecomputeShortestPathTime(gpu_precompute_time / 1000);
+	info.setPrecomputeShortestPathTime(precompute_time / 1000);
 	info.setCycleInspectionTime(cycle_inspection_time);
 	info.setIndependenceTestTime(independence_test_time);
 	info.setTotalTime();
@@ -386,11 +387,6 @@ int main(int argc, char* argv[]) {
 	info.print_stats(argv[2]);
 
 	delete[] fvs_array;
-
-	debug(kernel_init_time/1000);
-	debug(kernel_multi_search_time/1000);
-	debug(transfer_time/1000);
-	debug(gpu_precompute_time/1000);
 
 	device_struct.clear_memory();
 	trees.clear_memory();

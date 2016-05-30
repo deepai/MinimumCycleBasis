@@ -107,13 +107,10 @@ void __kernel_multi_search_shuffle_based(const int *R, const int *C,
 	}
 }
 
-float gpu_struct::Kernel_multi_search_helper(int start, int end,
+void gpu_struct::Kernel_multi_search_helper(int start, int end,
 		int stream_index) {
-	assert(end > start);
 
 	int total_length = end - start;
-
-	timer.Start();
 
 	__kernel_multi_search_shuffle_based<<<
 			(int) ceil((double) total_length / 16), 512, 0,
@@ -122,13 +119,5 @@ float gpu_struct::Kernel_multi_search_helper(int start, int end,
 
 	CudaError(cudaStreamSynchronize(CU_STREAM_PER_THREAD));
 
-	//CudaError(cudaDeviceSynchronize());
-
-	timer.Stop();
-
 	CudaError(cudaGetLastError());
-
-	float time_elapsed = timer.Elapsed();
-
-	return time_elapsed;
 }

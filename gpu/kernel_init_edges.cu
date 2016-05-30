@@ -86,9 +86,8 @@ void __kernel_init_edge(const int* __restrict__ d_non_tree_edges,
  * @param end index of vertex from 1 to fvs_size - 1
  * @param stream_index 0 or 1
  */
-float gpu_struct::Kernel_init_edges_helper(int start, int end,
+void gpu_struct::Kernel_init_edges_helper(int start, int end,
 		int stream_index) {
-	assert(end > start);
 
 	int total_length = end - start;
 
@@ -102,11 +101,5 @@ float gpu_struct::Kernel_init_edges_helper(int start, int end,
 
 	CudaError(cudaStreamSynchronize(CU_STREAM_PER_THREAD));
 
-	timer.Stop();
-
 	CudaError(cudaGetLastError());
-
-	float time_elapsed = timer.Elapsed();
-
-	return time_elapsed;
 }
