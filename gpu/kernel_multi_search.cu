@@ -114,10 +114,6 @@ void gpu_struct::Kernel_multi_search_helper(int start, int end,
 
 	__kernel_multi_search_shuffle_based<<<
 			(int) ceil((double) total_length / 16), 512, 0,
-			CU_STREAM_PER_THREAD>>>(d_row_offset, d_columns, original_nodes,
+			streams[stream_index]>>>(d_row_offset, d_columns, original_nodes,
 			d_precompute_array, start, end, chunk_size, stream_index);
-
-	CudaError(cudaStreamSynchronize(CU_STREAM_PER_THREAD));
-
-	CudaError(cudaGetLastError());
 }

@@ -12,7 +12,7 @@ CC=g++
 CFLAGS=-I$(IDIR) -I$(EX_INCLUDE) -I../ -fopenmp -lgomp $(DFLAGS) -w -std=c++11 -fpermissive -O3
 CXXFLAGS = -I$(IDIR) -I$(EX_INCLUDE) -I../ -fopenmp -lgomp $(DFLAGS) -w -std=c++11 -fpermissive -O3
 
-NVFLAGS = -arch=sm_35 --default-stream per-thread -Xcompiler -fopenmp -lgomp $(DFLAGS) -w -std=c++11 -O3 -Xptxas -v
+NVFLAGS = -arch=sm_35 -Xcompiler -fopenmp -lgomp $(DFLAGS) -w -std=c++11 -O3 -Xptxas -v
 
 NVCC = nvcc $(NVFLAGS) -I$(IDIR) -I$(EX_INCLUDE) -I../
 

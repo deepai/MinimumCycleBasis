@@ -74,7 +74,7 @@ int main(int argc, char* argv[]) {
 	int v1, v2, Initial_Vertices, weight;
 	;
 
-	int nodes, edges, chunk_size = 1, nstreams = 1;
+	int nodes, edges, chunk_size = 1, nstreams = 2;
 
 	//firt line of the input file contains the number of nodes and edges
 	Reader.get_nodes_edges(nodes, edges);
@@ -190,6 +190,7 @@ int main(int argc, char* argv[]) {
 	{
 		multiple_transfers = false;
 
+		debug("current chunk_size = ",chunk_size);
 		debug("Multiple transfers are turned off and the entire graph is copied first.");
 	}
 

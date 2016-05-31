@@ -91,15 +91,9 @@ void gpu_struct::Kernel_init_edges_helper(int start, int end,
 
 	int total_length = end - start;
 
-	timer.Start();
-
-	__kernel_init_edge<<<total_length, 512, 0, CU_STREAM_PER_THREAD>>>(
+	__kernel_init_edge<<<total_length, 512, 0, streams[stream_index]>>>(
 			d_non_tree_edges, d_edge_offsets, d_precompute_array,
 			d_fvs_vertices, d_si_vector, start, end, stream_index, chunk_size,
 			original_nodes, size_vector, fvs_size, num_non_tree_edges,
 			num_edges);
-
-	CudaError(cudaStreamSynchronize(CU_STREAM_PER_THREAD));
-
-	CudaError(cudaGetLastError());
 }

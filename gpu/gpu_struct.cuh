@@ -26,10 +26,14 @@ struct gpu_struct {
 	int *d_precompute_array;
 	int *d_fvs_vertices;
 
+	int *d_counter;
+
 	GpuTimer timer;
 
 	//Device pointers for queues
 	int nstreams;
+
+	cudaStream_t* streams;
 
 	unsigned long long *d_si_vector;
 
@@ -45,10 +49,14 @@ struct gpu_struct {
 
 		init_memory_setup();
 		init_pitch();
+		init_streams();
 	}
 
 	void init_memory_setup();
 	void init_pitch();
+
+	void init_streams();
+	void destroy_streams();
 
 	void calculate_memory();
 
@@ -67,7 +75,6 @@ struct gpu_struct {
 	void clear_memory();
 
 	float process_shortest_path(gpu_task *host_memory,bool multiple_transfer);
-
 };
 
 #endif
