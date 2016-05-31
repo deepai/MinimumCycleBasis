@@ -14,7 +14,6 @@ void gpu_struct::init_memory_setup() {
 			cudaMalloc(&d_precompute_array,
 					to_byte_32bit(chunk_size * original_nodes)));
 	CudaError(cudaMalloc(&d_si_vector, to_byte_64bit(size_vector)));
-	CudaError(cudaMalloc(&d_fvs_vertices, to_byte_32bit(fvs_size)));
 }
 
 void gpu_struct::init_streams() {
@@ -37,7 +36,6 @@ void gpu_struct::clear_memory() {
 	CudaError(cudaFree(d_columns));
 	CudaError(cudaFree(d_precompute_array));
 	CudaError(cudaFree(d_si_vector));
-	CudaError(cudaFree(d_fvs_vertices));
 
 	destroy_streams();
 }
@@ -88,17 +86,6 @@ void gpu_struct::initialize_memory(gpu_task *host_memory) {
 			cudaMemcpy(d_columns, host_memory->host_tree->tree_cols[0],
 					to_byte_32bit(chunk_size * original_nodes),
 					cudaMemcpyHostToDevice));
-
-	CudaError(
-			cudaMemcpy(d_precompute_array,
-					host_memory->host_tree->precompute_value[0],
-					to_byte_32bit(chunk_size * original_nodes),
-					cudaMemcpyHostToDevice));
-
-	CudaError(
-			cudaMemcpy(d_fvs_vertices, host_memory->fvs_array,
-					to_byte_32bit(fvs_size), cudaMemcpyHostToDevice));
-
 }
 
 float gpu_struct::copy_support_vector(bit_vector *vector) {
