@@ -331,8 +331,8 @@ int main(int argc, char* argv[]) {
 				bit = current_vector->get_bit(non_tree_edges_map[edge_offset]);
 			}
 
-			bit = (bit + precompute_nodes[nodes_index[row]]) % 2;
-			bit = (bit + precompute_nodes[nodes_index[col]]) % 2;
+			bit = (bit ^ precompute_nodes[nodes_index[row]]);
+			bit = (bit ^ precompute_nodes[nodes_index[col]]);
 
 			if (bit == 1) {
 				final_mcb.push_back(*cycle);
