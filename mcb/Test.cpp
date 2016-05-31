@@ -95,8 +95,7 @@ int main(int argc, char* argv[]) {
 	int source_vertex = 0;
 
 	csr_multi_graph *reduced_graph = csr_multi_graph::get_modified_graph(graph,
-	NULL,
-	NULL, 0);
+			NULL, NULL, 0);
 
 	//Node Validity
 	assert(reduced_graph->Nodes + 0 == graph->Nodes);

@@ -109,8 +109,7 @@ int main(int argc, char* argv[]) {
 	int source_vertex = 0;
 
 	csr_multi_graph *reduced_graph = csr_multi_graph::get_modified_graph(graph,
-	NULL,
-	NULL, 0);
+			NULL, NULL, 0);
 
 	FVS fvs_helper(reduced_graph);
 	fvs_helper.MGA();

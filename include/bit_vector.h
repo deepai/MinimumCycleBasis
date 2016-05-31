@@ -41,8 +41,7 @@ public:
 
 	}
 
-	void init_zero()
-	{
+	void init_zero() {
 		memset(elements, 0, sizeof(unsigned long long) * size);
 	}
 
@@ -83,9 +82,9 @@ public:
 		return count;
 	}
 
-	void copy_vector(const bit_vector *src_vector)
-	{
-		memcpy(elements,src_vector->elements,sizeof(unsigned long long) * size);
+	void copy_vector(const bit_vector *src_vector) {
+		memcpy(elements, src_vector->elements,
+				sizeof(unsigned long long) * size);
 	}
 
 	//Return the actual index of the element containing the offset.

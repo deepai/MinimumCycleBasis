@@ -11,8 +11,7 @@
 #define to_byte_32bit(X) (X * sizeof(int))
 #define to_byte_64bit(X) (X * sizeof(long long))
 
-struct gpu_struct
-{
+struct gpu_struct {
 	int num_edges;
 	int size_vector;
 	int original_nodes;
@@ -36,8 +35,8 @@ struct gpu_struct
 
 	cudaStream_t* streams;
 
-	gpu_struct(int num_edges,int num_non_tree_edges,int size_vector,int original_nodes,int fvs_size,int chunk_size,int nstreams)
-	{
+	gpu_struct(int num_edges, int num_non_tree_edges, int size_vector,
+			int original_nodes, int fvs_size, int chunk_size, int nstreams) {
 		this->num_non_tree_edges = num_non_tree_edges;
 		this->num_edges = num_edges;
 		this->size_vector = size_vector;
@@ -63,8 +62,8 @@ struct gpu_struct
 	float copy_support_vector(bit_vector *vector);
 	float fetch(gpu_task *host_memory);
 
-	float Kernel_init_edges_helper(int start,int end,int stream_index);
-	float Kernel_multi_search_helper(int start,int end,int stream_index);
+	float Kernel_init_edges_helper(int start, int end, int stream_index);
+	float Kernel_multi_search_helper(int start, int end, int stream_index);
 
 	void clear_memory();
 

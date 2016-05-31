@@ -141,8 +141,8 @@ struct cycle {
 	 * @param non_tree_edges map of non_tree edges and its position from 0 - non_tree_edges.size() - 1
 	 * @return bit_vector describing the cycle.
 	 */
-	void *get_cycle_vector(std::vector<int> &non_tree_edges,
-			int num_elements,bit_vector *cycle_vector) {
+	void *get_cycle_vector(std::vector<int> &non_tree_edges, int num_elements,
+			bit_vector *cycle_vector) {
 
 		cycle_vector->init_zero();
 
