@@ -6,7 +6,6 @@
 #include <vector>
 #include <utility>
 #include <set>
-#include <stack>
 #include <omp.h>
 #include <string>
 #include <algorithm>

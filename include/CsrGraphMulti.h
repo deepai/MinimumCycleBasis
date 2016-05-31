@@ -3,6 +3,7 @@
 
 #include "CsrGraph.h"
 #include <unordered_map>
+#include <map>
 
 class csr_multi_graph: public csr_graph {
 
@@ -176,7 +177,7 @@ public:
 	 * @param tree_edges [description]
 	 * @param src [description]
 	 */
-	void fill_tree_edges(unsigned *r, unsigned *c, unsigned *e,
+	void fill_tree_edges(unsigned *r, unsigned *c, int *e,
 			std::vector<unsigned> *tree_edges, unsigned src) {
 		assert(tree_edges->size() + 1 == Nodes);
 
