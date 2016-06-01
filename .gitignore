@@ -3,10 +3,10 @@ bicc/bicc_decomposition
 bicc/Relabeller
 include/*.o
 mcb/*.o
-mcb/mcb_cycle
+mcb/mcb_cuda
 mcb/Test
-mcb/mcb_cycle_deg_two_remove
+mcb/mcb_cpu_baseline
 mcb/Test_deg_two_remove
-mcb/mcb_non_cpu_rd
+mcb/mcb_cpu
 *.mtx
 RESULT_MCB/
