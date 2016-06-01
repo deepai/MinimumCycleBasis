@@ -5,6 +5,9 @@
 
 ulimit -s unlimited
 
+mkdir -p bicc_output
+mkdir -p Results
+
 rm bicc_output/* -f
 
 echo "Invoking bicc_decomposition..."

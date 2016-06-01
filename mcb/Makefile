@@ -45,13 +45,13 @@ GPU_DEPS = $(GPU_DIR)/gpu_struct.o \
 OBJ1 = mcb_cycle_deg_two_remove.o $(GPU_DEPS)
 OBJ2 = mcb_cycle.o
 
-all: mcb_cycle mcb_cycle_deg_two_remove Test_deg_two_remove Test mcb_non_cpu_rd
+all: mcb_cpu_baseline mcb_cuda Test_deg_two_remove Test mcb_cpu
 
 $(GPU_DIR)/%.o: $(GPU_DIR)/%.cu $(GPU_HEADERS)
 	@echo [NVCC] $@
 	@$(NVCC) -dc -o $@ $< -I../
 
-mcb_cycle_deg_two_remove: $(OBJ1) $(EXTRA_DEPS)
+mcb_cuda: $(OBJ1) $(EXTRA_DEPS)
 	@echo [NVCC] $@
 	@$(NVCC) -o $@ $^ $(LIBS) $(DFLAGS)
 
@@ -67,7 +67,7 @@ Test_deg_two_remove.o: Test_deg_two_remove.cpp $(DEPS)
 	@echo [NVCC] $@
 	@$(NVCC) -c -o $@ $< $(DFLAGS)
 
-mcb_cycle: $(OBJ2) $(EXTRA_DEPS)
+mcb_cpu_baseline: $(OBJ2) $(EXTRA_DEPS)
 	@echo [NVCC] $@
 	@$(NVCC) -o $@ $^ $(LIBS) $(DFLAGS) -I../
 
@@ -79,7 +79,7 @@ Test: Test.o $(EXTRA_DEPS)
 	@echo [NVCC] $@
 	@$(NVCC) -o $@ $^ $(LIBS) $(DFLAGS)
 
-mcb_non_cpu_rd: mcb_non_cpu_rd.cpp $(DEPS) $(EXTRA_DEPS)
+mcb_cpu: mcb_non_cpu_rd.cpp $(DEPS) $(EXTRA_DEPS)
 	@echo [CC] $@
 	@$(CC) -o $@ $< $(CFLAGS) $(EXTRA_DEPS) $(DFLAGS) -I../
 
@@ -93,4 +93,4 @@ $(include)/%.o: $(include)/%.cpp $(DEPS)
 .PHONY: clean
 
 clean:
-	rm -f $(GPU_DIR)/*.o $(ODIR)/*.o *~ core $(INCDIR)/*~  *.o ../include/*.o mcb_cycle_deg_two_remove Test_deg_two_remove mcb_cycle Test mcb_non_cpu_rd
+	rm -f $(GPU_DIR)/*.o $(ODIR)/*.o *~ core $(INCDIR)/*~  *.o ../include/*.o mcb_cuda Test_deg_two_remove mcb_cpu_baseline Test mcb_cpu

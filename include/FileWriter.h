@@ -18,7 +18,7 @@ class FileWriter {
 
 	int M, N, Edges;
 
-	inline void ERROR(char *ch) {
+	inline void ERROR(const char *ch) {
 		std::cerr << RED << ch << " " << RESET;
 	}
 
