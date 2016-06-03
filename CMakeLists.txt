@@ -5,10 +5,10 @@ find_package(CUDA REQUIRED)
 set(
     CUDA_NVCC_FLAGS
     ${CUDA_NVCC_FLAGS};
-    -O3 -gencode arch=compute_35,code=sm_35 -std=c++11 -DMULTI_THREAD -DNDEBUG -DVERBOSE -Xcompiler -w
+    -O3 -gencode arch=compute_35,code=sm_35 -std=c++11 -DMULTI_THREAD -DNDEBUG -DVERBOSE -Xcompiler -w -Xcompiler -fopenmp
     )
 
-add_compile_options(-O3 -std=c++11 -w)
+add_compile_options(-O3 -std=c++11 -fopenmp -w)
 add_definitions(-DMULTI_THREAD -DNDEBUG -DVERBOSE)
 
 include_directories(
