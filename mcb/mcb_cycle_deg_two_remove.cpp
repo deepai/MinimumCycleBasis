@@ -73,7 +73,7 @@ int main(int argc, char* argv[]) {
 	int v1, v2, Initial_Vertices, weight;
 	;
 
-	int nodes, edges, chunk_size = 1, nstreams = 2;
+	int nodes, edges, chunk_size = 1, nstreams = 4;
 
 	//firt line of the input file contains the number of nodes and edges
 	Reader.get_nodes_edges(nodes, edges);
@@ -294,16 +294,20 @@ int main(int argc, char* argv[]) {
 			allocate_pinned_memory, free_pinned_memory);
 	bit_vector *current_vector = new bit_vector(num_non_tree_edges,
 			allocate_pinned_memory, free_pinned_memory);
+	bit_vector *next_vector = new bit_vector(num_non_tree_edges,
+			allocate_pinned_memory, free_pinned_memory);
+
+	bit_vector *temp_bitvec_ptr;
 
 	current_vector->init_zero();
 	current_vector->set_bit(0, true);
 
+	precompute_time += device_struct.copy_support_vector(current_vector);
+	precompute_time += device_struct.process_shortest_path(&gpu_compute,multiple_transfers);
+
 	//Main Outer Loop of the Algorithm.
 	for (int e = 0; e < num_non_tree_edges; e++) {
 		//globalTimer.start_timer();
-
-		precompute_time += device_struct.copy_support_vector(current_vector);
-		precompute_time += device_struct.process_shortest_path(&gpu_compute,multiple_transfers);
 
 		globalTimer.start_timer();
 
@@ -351,21 +355,41 @@ int main(int argc, char* argv[]) {
 		final_mcb.back()->get_cycle_vector(non_tree_edges_map,
 				initial_spanning_tree->non_tree_edges->size(), cycle_vector);
 
-#pragma omp parallel for
-		for (int j = e + 1; j < num_non_tree_edges; j++) {
+		if((e + 1) >= num_non_tree_edges)
+			break;
+
+
+	#pragma omp parallel
+	{
+		#pragma omp master
+		{
+			unsigned product = cycle_vector->dot_product(support_vectors[e + 1]);
+			if (product == 1)
+				support_vectors[e + 1]->do_xor(current_vector);
+
+			next_vector->copy_vector(support_vectors[e + 1]);
+
+			device_struct.copy_support_vector(next_vector);
+			device_struct.process_shortest_path(&gpu_compute,multiple_transfers);
+		}
+		#pragma omp for
+		for (int j = e + 2; j < num_non_tree_edges; j++) {
 			unsigned product = cycle_vector->dot_product(support_vectors[j]);
 			if (product == 1)
 				support_vectors[j]->do_xor(current_vector);
 		}
-
-		if (e < num_non_tree_edges - 1)
-			current_vector->copy_vector(support_vectors[e + 1]);
+	}
+		//exchange the support vector pointers.
+		temp_bitvec_ptr = current_vector;
+		current_vector = next_vector;
+		next_vector = temp_bitvec_ptr;
 
 		independence_test_time += globalTimer.get_event_time();
 
 	}
 
 	cycle_vector->clear_memory();
+	next_vector->clear_memory();
 	current_vector->clear_memory();
 
 	list_cycle.clear();
