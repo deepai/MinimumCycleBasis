@@ -126,12 +126,12 @@ float gpu_struct::fetch(gpu_task *host_memory) {
 }
 
 void gpu_struct::transfer_from_asynchronous(int stream_index,
-		gpu_task *host_memory) {
+		gpu_task *host_memory,int num_chunk) {
 
 	CudaError(
 			cudaMemcpyAsync(
 					d_edge_offsets + stream_index * chunk_size * original_nodes,
-					host_memory->host_tree->edge_offset[stream_index],
+					host_memory->host_tree->edge_offset[num_chunk],
 					to_byte_32bit(chunk_size * original_nodes),
 					cudaMemcpyHostToDevice, streams[stream_index]));
 
@@ -139,23 +139,23 @@ void gpu_struct::transfer_from_asynchronous(int stream_index,
 			cudaMemcpyAsync(
 					d_row_offset
 							+ stream_index * chunk_size * (original_nodes + 1),
-					host_memory->host_tree->tree_rows[stream_index],
+					host_memory->host_tree->tree_rows[num_chunk],
 					to_byte_32bit(chunk_size * (original_nodes + 1)),
 					cudaMemcpyHostToDevice, streams[stream_index]));
 
 	CudaError(
 			cudaMemcpyAsync(
 					d_columns + stream_index * chunk_size * original_nodes,
-					host_memory->host_tree->tree_cols[stream_index],
+					host_memory->host_tree->tree_cols[num_chunk],
 					to_byte_32bit(chunk_size * original_nodes),
 					cudaMemcpyHostToDevice, streams[stream_index]));
 }
 
 void gpu_struct::transfer_to_asynchronous(int stream_index,
-		gpu_task *host_memory) {
+		gpu_task *host_memory,int num_chunk) {
 	CudaError(
 			cudaMemcpyAsync(
-					host_memory->host_tree->precompute_value[stream_index],
+					host_memory->host_tree->precompute_value[num_chunk],
 					d_precompute_array
 							+ stream_index * chunk_size * original_nodes,
 					to_byte_32bit(chunk_size * original_nodes),
@@ -166,18 +166,19 @@ float gpu_struct::process_shortest_path(gpu_task *host_memory,
 		bool multiple_transfer) {
 	timer.Start();
 
-	for (int i = 0; i < nstreams; i++) {
-		int start = i * chunk_size;
-		int end = (i + 1) * chunk_size;
+	for (int i = 0; i < num_chunks; i++) {
+
+		int start = (i%nstreams) * chunk_size;
+		int end = (i%nstreams + 1) * chunk_size;
 
 		if (multiple_transfer)
-			transfer_from_asynchronous(i, host_memory);
+			transfer_from_asynchronous(i%nstreams, host_memory, i);
 
-		Kernel_init_edges_helper(start, end, i);
+		Kernel_init_edges_helper(start, end, i%nstreams);
 
-		Kernel_multi_search_helper(start, end, i);
+		Kernel_multi_search_helper(start, end, i%nstreams);
 
-		transfer_to_asynchronous(i, host_memory);
+		transfer_to_asynchronous(i%nstreams, host_memory, i);
 	}
 
 	timer.Stop();

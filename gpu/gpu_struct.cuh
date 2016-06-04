@@ -17,6 +17,7 @@ struct gpu_struct {
 	int original_nodes;
 	int fvs_size;
 	int chunk_size;
+	int num_chunks;
 	int num_non_tree_edges;
 
 	int *d_non_tree_edges;
@@ -45,7 +46,8 @@ struct gpu_struct {
 		this->original_nodes = original_nodes;
 		this->fvs_size = fvs_size;
 		this->chunk_size = chunk_size;
-		this->nstreams = nstreams;
+		this->nstreams = std::min(32, nstreams);
+		this->num_chunks = nstreams;
 
 		init_memory_setup();
 		init_pitch();
@@ -63,11 +65,11 @@ struct gpu_struct {
 	void initialize_memory(gpu_task *host_memory);
 	float copy_support_vector(bit_vector *vector);
 
-	void transfer_from_asynchronous(int stream_index, gpu_task *host_memory);
+	void transfer_from_asynchronous(int stream_index, gpu_task *host_memory,int num_chunk);
 
 	float fetch(gpu_task *host_memory);
 
-	void transfer_to_asynchronous(int stream_index, gpu_task *host_memory);
+	void transfer_to_asynchronous(int stream_index, gpu_task *host_memory,int num_chunk);
 
 	void Kernel_init_edges_helper(int start, int end, int stream_index);
 	void Kernel_multi_search_helper(int start, int end, int stream_index);

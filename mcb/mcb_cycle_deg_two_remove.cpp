@@ -180,10 +180,12 @@ int main(int argc, char* argv[]) {
 						non_tree_edges_map[reduced_graph->reverse_edge->at(i)];
 	}
 
+	chunk_size = 2400;
+	nstreams = (int)ceil((double)fvs_helper.get_num_elements()/ chunk_size);
+
 	int max_chunk_size = calculate_chunk_size(reduced_graph->Nodes, non_tree_edges_map.size(),
 			(int) (ceil((double) num_non_tree_edges / 64)), nstreams);
 
-	chunk_size = (int)(ceil((double)fvs_helper.get_num_elements()/nstreams));
 
 	bool multiple_transfers = true;
 
@@ -191,6 +193,7 @@ int main(int argc, char* argv[]) {
 	{
 		multiple_transfers = false;
 
+		debug("number of streams = ",nstreams);
 		debug("current chunk_size = ",chunk_size);
 		debug("Multiple transfers are turned off and the entire graph is copied first.");
 	}
