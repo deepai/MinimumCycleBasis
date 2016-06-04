@@ -50,8 +50,8 @@ int main(int argc, char* argv[]) {
 	if (argc < 4) {
 		printf("Ist Argument should indicate the InputFile\n");
 		printf("2nd Argument should indicate the OutputFile\n");
-		printf(
-				"3th argument should indicate the number of threads.(Optional) (1 default)\n");
+		printf("3th argument should indicate the number of threads.(Optional) (1 default)\n");
+		printf("4th Argument is number of streams.(Optional) (1 default)");
 		exit(1);
 	}
 
@@ -73,7 +73,9 @@ int main(int argc, char* argv[]) {
 	int v1, v2, Initial_Vertices, weight;
 	;
 
-	int nodes, edges, chunk_size = 1, nstreams = 4;
+	int nodes, edges, chunk_size = 1, nstreams = 1;
+	if(argc == 5)
+		nstreams = atoi(argv[4]);
 
 	//firt line of the input file contains the number of nodes and edges
 	Reader.get_nodes_edges(nodes, edges);
