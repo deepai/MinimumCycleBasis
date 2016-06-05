@@ -48,8 +48,8 @@ int main(int argc, char* argv[]) {
 	if (argc < 4) {
 		printf("Ist Argument should indicate the InputFile\n");
 		printf("2nd Argument should indicate the OutputFile\n");
-		printf(
-				"3th argument should indicate the number of threads.(Optional) (1 default)\n");
+		printf("3th argument should indicate the number of threads.(Optional) (1 default)\n");
+		printf("4th Argument should indicate the number of edges at which to pause.(Optional) (default num_non_tree_edges");
 		exit(1);
 	}
 
@@ -221,9 +221,19 @@ int main(int argc, char* argv[]) {
 	double cycle_inspection_time = 0;
 	double independence_test_time = 0;
 
+	int pause_edge = num_non_tree_edges;
+
+	if(argc == 5)
+		pause_edge = atoi(argv[4]);
+
 	//Main Outer Loop of the Algorithm.
 	for (int e = 0; e < num_non_tree_edges; e++) {
-		globalTimer.start_timer();
+		if(e == pause_edge)
+		{
+			std::cout << "Paused at " << e << "\\" << num_non_tree_edges << std::endl;
+			std::cout << "Enter new Pause_edge value " << std::endl;
+			std::cin >> pause_edge;
+		}
 
 #pragma omp parallel for
 		for (int i = 0; i < num_threads; i++) {

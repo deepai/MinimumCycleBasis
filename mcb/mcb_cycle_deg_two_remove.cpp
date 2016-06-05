@@ -51,7 +51,7 @@ int main(int argc, char* argv[]) {
 		printf("Ist Argument should indicate the InputFile\n");
 		printf("2nd Argument should indicate the OutputFile\n");
 		printf("3th argument should indicate the number of threads.(Optional) (1 default)\n");
-		printf("4th Argument is number of streams.(Optional) (1 default)");
+		printf("4th Argument is chunk_size.(Optional) (720 default)");
 		exit(1);
 	}
 
@@ -73,9 +73,9 @@ int main(int argc, char* argv[]) {
 	int v1, v2, Initial_Vertices, weight;
 	;
 
-	int nodes, edges, chunk_size = 1, nstreams = 1;
+	int nodes, edges, chunk_size = 720, nstreams = 1;
 	if(argc == 5)
-		nstreams = atoi(argv[4]);
+		chunk_size = atoi(argv[4]);
 
 	//firt line of the input file contains the number of nodes and edges
 	Reader.get_nodes_edges(nodes, edges);
@@ -180,7 +180,7 @@ int main(int argc, char* argv[]) {
 						non_tree_edges_map[reduced_graph->reverse_edge->at(i)];
 	}
 
-	chunk_size = 2400;
+	chunk_size = 720;
 	nstreams = (int)ceil((double)fvs_helper.get_num_elements()/ chunk_size);
 
 	int max_chunk_size = calculate_chunk_size(reduced_graph->Nodes, non_tree_edges_map.size(),
