@@ -354,14 +354,15 @@ int main(int argc, char* argv[]) {
 			}
 		}
 
-		cycle_inspection_time += globalTimer.get_event_time();
-		globalTimer.start_timer();
-
 		final_mcb.back()->get_cycle_vector(non_tree_edges_map,
 				initial_spanning_tree->non_tree_edges->size(), cycle_vector);
 
+		cycle_inspection_time += globalTimer.get_event_time();
+
 		if((e + 1) >= num_non_tree_edges)
 			break;
+
+		globalTimer.start_timer();
 
 
 	#pragma omp parallel

@@ -55,12 +55,14 @@ int main(int argc, char* argv[]) {
 
 	num_threads = 1;
 
-	if (argc == 4)
+	if (argc >= 4)
 		num_threads = atoi(argv[3]);
 
 	InputFileName = argv[1];
 
 	omp_set_num_threads(num_threads);
+
+	printf("num_threads = %d\n",num_threads);
 
 	//Open the FileReader class
 	std::string InputFilePath = InputFileName;
@@ -257,7 +259,7 @@ int main(int argc, char* argv[]) {
 
 	int pause_edge = num_non_tree_edges;
 
-	if(argc == 5)
+	if(argc >= 5)
 		pause_edge = atoi(argv[4]);
 
 	//Main Outer Loop of the Algorithm.
