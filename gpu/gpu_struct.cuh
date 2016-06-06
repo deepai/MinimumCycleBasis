@@ -5,6 +5,7 @@
 #include "gpu_task.h"
 #include "bit_vector.h"
 #include "gputimer.h"
+#include "stats.h"
 
 #include <stdio.h>
 
@@ -36,10 +37,12 @@ struct gpu_struct {
 
 	cudaStream_t* streams;
 
+	stats *info;
+
 	unsigned long long *d_si_vector;
 
 	gpu_struct(int num_edges, int num_non_tree_edges, int size_vector,
-			int original_nodes, int fvs_size, int chunk_size, int nstreams) {
+			int original_nodes, int fvs_size, int chunk_size, int nstreams, stats *info) {
 		this->num_non_tree_edges = num_non_tree_edges;
 		this->num_edges = num_edges;
 		this->size_vector = size_vector;
@@ -48,6 +51,7 @@ struct gpu_struct {
 		this->chunk_size = chunk_size;
 		this->nstreams = std::min(32, nstreams);
 		this->num_chunks = nstreams;
+		this->info = info;
 
 		init_memory_setup();
 		init_pitch();

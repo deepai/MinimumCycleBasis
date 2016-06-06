@@ -284,15 +284,50 @@ struct stats {
 							  Preprocessing Time(s),\
 							  Main_loop(s),\
 							  Total_time(s)\n");
+			else
+				fprintf(fout,"Total Nodes,\
+							  Total Edges,\
+							  New Edges,\
+							  Nodes removed,\
+							  Fvs size,\
+							  Initial Cycles,\
+							  Final_cycles,\
+							  Total_Weight,\
+							  nchunks,\
+							  nstreams,\
+							  total_memory_usage,\
+							  static_memory_usage,\
+							  variable_memory_usage,\
+							  load_entire_memory,\
+							  Construction_trees(s),\
+							  Collect_cycles(s),\
+							  Inspection_time(s),\
+							  Gpu_timings,\
+							  Hybrid_Timings(s),\
+							  Preprocessing Time(s),\
+							  Main_loop(s),\
+							  Total_time(s)\n");
 		}
 
 		if(!is_gpu_timings)
 			fprintf(fout,
-					"%5d,%5d,%5d,%5d,%5d,%5d,%5d,%5d,%15lf,%15lf,%15lf,%15lf,%15lf,%15lf,%15lf\n",
+					"%5d,%5d,%5d,%5d,%5d,%5d,%5d,%5d,%15lf,%15lf,%15lf,%15lf,%15lf,%15lf,%15lf,%15lf\n",
 					num_nodes, edges, new_edges, num_nodes_removed, num_fvs, num_initial_cycles,\
 					num_final_cycles, total_weight, time_construction_trees, time_collect_cycles,\
 					cycle_inspection_time, precompute_shortest_path_time, independence_test_time,\
-					time_construction_trees + time_collect_cycles, total_time);
+					time_construction_trees + time_collect_cycles, total_time,\
+					total_time + time_construction_trees + time_collect_cycles);
+
+		else
+			fprintf(fout,
+					"%5d,%5d,%5d,%5d,%5d,%5d,%5d,%5d,%5d,%5d,%5d,%5d,%5d,%s,\
+					%15lf,%15lf,%15lf,%15lf,%15lf,%15lf,%15lf,%15lf\n",
+					num_nodes, edges, new_edges, num_nodes_removed, num_fvs, num_initial_cycles,\
+					num_final_cycles, total_weight, nchunks, nstreams, total_memory_usage,\
+					static_memory_usage, variable_memory_usage, load_entire_memory?"YES":"NO",\
+					time_construction_trees, time_collect_cycles, cycle_inspection_time, gpu_timings,
+					independence_test_time, time_construction_trees + time_collect_cycles,
+					total_time, total_time + time_construction_trees + time_collect_cycles);
 
 		fclose(fout);
 	}

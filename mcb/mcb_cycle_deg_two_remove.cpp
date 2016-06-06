@@ -204,7 +204,10 @@ int main(int argc, char* argv[]) {
 		debug("Multiple transfers are turned off and the entire graph is copied first.");
 	}
 
+	info.setLoadEntireMemory(!multiple_transfers);
 
+	info.setNchunks(nstreams);
+	info.setNstreams(nstreams);
 
 	//construct the initial
 	//compressed_trees trees(chunk_size,fvs_helper.get_num_elements(),fvs_array,reduced_graph);
@@ -278,7 +281,7 @@ int main(int argc, char* argv[]) {
 			non_tree_edges_map, support_vectors, num_non_tree_edges);
 	gpu_struct device_struct(non_tree_edges_map.size(), num_non_tree_edges,
 			support_vectors[0]->size, gpu_compute.original_nodes,
-			gpu_compute.fvs_size, chunk_size, nstreams);
+			gpu_compute.fvs_size, chunk_size, nstreams, &info);
 
 	configure_grid(0, gpu_compute.fvs_size);
 
@@ -400,7 +403,7 @@ int main(int argc, char* argv[]) {
 
 	list_cycle.clear();
 
-	info.setPrecomputeShortestPathTime(precompute_time / 1000);
+	info.setGpuTimings(precompute_time / 1000);
 	info.setCycleInspectionTime(cycle_inspection_time);
 	info.setIndependenceTestTime(hybrid_time);
 	info.setTotalTime();
