@@ -42,7 +42,7 @@ std::string OutputFileDirectory;
 double totalTime = 0;
 double localTime = 0;
 
-stats info;
+stats info(true);
 
 int num_threads;
 
@@ -255,8 +255,6 @@ int main(int argc, char* argv[]) {
 		if (list_cycle_vec[i] != NULL)
 			list_cycle.push_back(list_cycle_vec[i]);
 	}
-
-	info.setNumIsometricCycles(list_cycle.size());
 
 	list_cycle_vec.clear();
 

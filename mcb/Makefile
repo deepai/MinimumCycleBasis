@@ -9,10 +9,10 @@ DFLAGS = -DMULTI_THREAD  -DNDEBUG -DVERBOSE
 
 CC=g++
 
-CFLAGS=-I$(IDIR) -I$(EX_INCLUDE) -I../ -fopenmp -lgomp $(DFLAGS) -w -std=c++11 -fpermissive -O3
-CXXFLAGS = -I$(IDIR) -I$(EX_INCLUDE) -I../ -fopenmp -lgomp $(DFLAGS) -w -std=c++11 -fpermissive -O3
+CFLAGS= -O2 -I$(IDIR) -I$(EX_INCLUDE) -I../ -fopenmp -lgomp $(DFLAGS) -w -std=c++11 -fpermissive
+CXXFLAGS = -O2 -I$(IDIR) -I$(EX_INCLUDE) -I../ -fopenmp -lgomp $(DFLAGS) -w -std=c++11 -fpermissive
 
-NVFLAGS = -arch=sm_35 -Xcompiler -fopenmp -lgomp $(DFLAGS) -w -std=c++11 -O3 -Xptxas -v
+NVFLAGS = -O2 -arch=sm_35 -Xcompiler -fopenmp -lgomp $(DFLAGS) -w -std=c++11 -Xptxas -v
 
 NVCC = nvcc $(NVFLAGS) -I$(IDIR) -I$(EX_INCLUDE) -I../
 

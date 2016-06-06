@@ -37,10 +37,7 @@ HostTimer globalTimer;
 std::string InputFileName;
 std::string OutputFileDirectory;
 
-double totalTime = 0;
-double localTime = 0;
-
-stats info;
+stats info(false);
 
 int num_threads;
 
@@ -92,7 +89,11 @@ int main(int argc, char* argv[]) {
 
 	graph->calculateDegreeandRowOffset();
 
+	//Record the Number of Nodes in the graph.
 	info.setNumNodesTotal(graph->Nodes);
+
+	//Record the Number of initial Edges in the graph.
+	info.setEdges(graph->rows->size());
 
 	Reader.fileClose();
 
@@ -115,6 +116,7 @@ int main(int argc, char* argv[]) {
 	fvs_helper.MGA();
 	fvs_helper.print_fvs();
 
+	//Record the number of FVS vertices in the graph.
 	info.setCycleNumFVS(fvs_helper.get_num_elements());
 
 	int *fvs_array = fvs_helper.get_copy_fvs_array();
@@ -153,6 +155,7 @@ int main(int argc, char* argv[]) {
 		multi_work[i] = new worker_thread(reduced_graph, storage, fvs_array,
 				&trees);
 
+	//Record time for producing SP trees.
 	globalTimer.start_timer();
 
 	//produce shortest path trees across all the nodes.
@@ -165,11 +168,9 @@ int main(int argc, char* argv[]) {
 				reduced_graph);
 	}
 
-	localTime = globalTimer.get_event_time();
-	totalTime += localTime;
+	info.setTimeConstructionTrees(globalTimer.get_event_time());
 
-	info.setTimeConstructionTrees(localTime);
-
+	//Record time for collection of cycles.
 	globalTimer.start_timer();
 
 	std::vector<cycle*> list_cycle_vec;
@@ -195,16 +196,11 @@ int main(int argc, char* argv[]) {
 			list_cycle.push_back(list_cycle_vec[i]);
 	}
 
-	info.setNumIsometricCycles(list_cycle.size());
-
 	list_cycle_vec.clear();
 
 	//assert(list_cycle.size() == count_cycles);
 
-	localTime = globalTimer.get_event_time();
-	totalTime += localTime;
-
-	info.setTimeCollectCycles(localTime);
+	info.setTimeCollectCycles(globalTimer.get_event_time());
 
 	//At this stage we have the shortest path trees and the cycles sorted in increasing order of length.
 
@@ -235,6 +231,9 @@ int main(int argc, char* argv[]) {
 			std::cin >> pause_edge;
 		}
 
+		//Record timings for precomputation steps.
+		globalTimer.start_timer();
+
 #pragma omp parallel for
 		for (int i = 0; i < num_threads; i++) {
 			multi_work[i]->precompute_supportVec(non_tree_edges_map,
@@ -242,6 +241,8 @@ int main(int argc, char* argv[]) {
 		}
 
 		precompute_time += globalTimer.get_event_time();
+
+		//Record timings for cycle inspection steps.
 		globalTimer.start_timer();
 
 		unsigned *node_rowoffsets, *node_columns, *precompute_nodes;
@@ -283,12 +284,14 @@ int main(int argc, char* argv[]) {
 			}
 		}
 
-		cycle_inspection_time += globalTimer.get_event_time();
-		globalTimer.start_timer();
-
 		bit_vector *cycle_vector = final_mcb.back()->get_cycle_vector(
 				non_tree_edges_map,
 				initial_spanning_tree->non_tree_edges->size());
+
+		cycle_inspection_time += globalTimer.get_event_time();
+
+		//Record timing for independence test.
+		globalTimer.start_timer();
 
 #pragma omp parallel for
 		for (int j = e + 1; j < num_non_tree_edges; j++) {
