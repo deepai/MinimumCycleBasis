@@ -39,9 +39,6 @@ HostTimer globalTimer;
 std::string InputFileName;
 std::string OutputFileDirectory;
 
-double totalTime = 0;
-double localTime = 0;
-
 stats info(true);
 
 int num_threads;
@@ -57,7 +54,7 @@ int main(int argc, char* argv[]) {
 
 	num_threads = 1;
 
-	if (argc == 4)
+	if (argc >= 4)
 		num_threads = atoi(argv[3]);
 
 	InputFileName = argv[1];
@@ -74,7 +71,7 @@ int main(int argc, char* argv[]) {
 	;
 
 	int nodes, edges, chunk_size = 720, nstreams = 1;
-	if(argc == 5)
+	if(argc >= 5)
 		chunk_size = atoi(argv[4]);
 
 	//firt line of the input file contains the number of nodes and edges
@@ -96,7 +93,11 @@ int main(int argc, char* argv[]) {
 
 	graph->calculateDegreeandRowOffset();
 
+	//Record the Number of Nodes in the graph.
 	info.setNumNodesTotal(graph->Nodes);
+
+	//Record the Number of initial Edges in the graph.
+	info.setEdges(graph->rows->size());
 
 	Reader.fileClose();
 
@@ -145,6 +146,7 @@ int main(int argc, char* argv[]) {
 
 	assert(nodes_removed == graph->get_num_degree_two_vertices());
 
+	//Record the number of nodes removed in the graph.
 	info.setNumNodesRemoved(nodes_removed);
 
 	csr_multi_graph *reduced_graph = csr_multi_graph::get_modified_graph(graph,
@@ -154,6 +156,10 @@ int main(int argc, char* argv[]) {
 	fvs_helper.MGA();
 	fvs_helper.print_fvs();
 
+	//Record the number of new edges in the graph.
+	info.setNewEdges(reduced_graph->rows->size());
+
+	//Record the number of FVS vertices in the graph.
 	info.setCycleNumFVS(fvs_helper.get_num_elements());
 
 	int *fvs_array = fvs_helper.get_copy_fvs_array();
@@ -213,6 +219,7 @@ int main(int argc, char* argv[]) {
 		multi_work[i] = new worker_thread(reduced_graph, storage, fvs_array,
 				&trees);
 
+	//Record time for producing SP trees.
 	globalTimer.start_timer();
 
 	//produce shortest path trees across all the nodes.
@@ -226,11 +233,9 @@ int main(int argc, char* argv[]) {
 				reduced_graph);
 	}
 
-	localTime = globalTimer.get_event_time();
-	totalTime += localTime;
+	info.setTimeConstructionTrees(globalTimer.get_event_time());
 
-	info.setTimeConstructionTrees(localTime);
-
+	//Record time for collection of cycles.
 	globalTimer.start_timer();
 
 	std::vector<cycle*> list_cycle_vec;
@@ -258,10 +263,7 @@ int main(int argc, char* argv[]) {
 
 	list_cycle_vec.clear();
 
-	localTime = globalTimer.get_event_time();
-	totalTime += localTime;
-
-	info.setTimeCollectCycles(localTime);
+	info.setTimeCollectCycles(globalTimer.get_event_time());
 
 	//At this stage we have the shortest path trees and the cycles sorted in increasing order of length.
 
@@ -286,7 +288,7 @@ int main(int argc, char* argv[]) {
 
 	double precompute_time = 0;
 	double cycle_inspection_time = 0;
-	double independence_test_time = 0;
+	double hybrid_time = 0;
 
 	if(!multiple_transfers)
 		device_struct.initialize_memory(&gpu_compute);
@@ -373,8 +375,8 @@ int main(int argc, char* argv[]) {
 
 			next_vector->copy_vector(support_vectors[e + 1]);
 
-			device_struct.copy_support_vector(next_vector);
-			device_struct.process_shortest_path(&gpu_compute,multiple_transfers);
+			precompute_time += device_struct.copy_support_vector(next_vector);
+			precompute_time += device_struct.process_shortest_path(&gpu_compute,multiple_transfers);
 		}
 		#pragma omp for
 		for (int j = e + 2; j < num_non_tree_edges; j++) {
@@ -388,7 +390,7 @@ int main(int argc, char* argv[]) {
 		current_vector = next_vector;
 		next_vector = temp_bitvec_ptr;
 
-		independence_test_time += globalTimer.get_event_time();
+		hybrid_time += globalTimer.get_event_time();
 
 	}
 
@@ -400,7 +402,7 @@ int main(int argc, char* argv[]) {
 
 	info.setPrecomputeShortestPathTime(precompute_time / 1000);
 	info.setCycleInspectionTime(cycle_inspection_time);
-	info.setIndependenceTestTime(independence_test_time);
+	info.setIndependenceTestTime(hybrid_time);
 	info.setTotalTime();
 
 	int total_weight = 0;

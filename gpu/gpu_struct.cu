@@ -181,9 +181,9 @@ float gpu_struct::process_shortest_path(gpu_task *host_memory,
 		transfer_to_asynchronous(i%nstreams, host_memory, i);
 	}
 
-	timer.Stop();
-
 	CudaError(cudaDeviceSynchronize());
+
+	timer.Stop();
 
 	return timer.Elapsed();
 }

@@ -110,8 +110,12 @@ struct stats {
 	}
 
 	void setTotalTime(double totalTime = 0) {
-		total_time = precompute_shortest_path_time + independence_test_time
+
+		if(!is_gpu_timings)
+			total_time = precompute_shortest_path_time + independence_test_time
 				+ cycle_inspection_time;
+		else
+			total_time = independence_test_time + cycle_inspection_time;
 	}
 
 	void setTotalWeight(int totalWeight) {
