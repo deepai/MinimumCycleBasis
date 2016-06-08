@@ -15,7 +15,6 @@ struct stats {
 
 	int new_edges = 0;
 
-
 	int num_final_cycles;
 	int total_weight;
 
@@ -111,9 +110,9 @@ struct stats {
 
 	void setTotalTime(double totalTime = 0) {
 
-		if(!is_gpu_timings)
+		if (!is_gpu_timings)
 			total_time = precompute_shortest_path_time + independence_test_time
-				+ cycle_inspection_time;
+					+ cycle_inspection_time;
 		else
 			total_time = independence_test_time + cycle_inspection_time;
 	}
@@ -267,13 +266,14 @@ struct stats {
 
 		if (!file_exist) {
 
-			if(!is_gpu_timings)
-				fprintf(fout,"Total Nodes,\
-							  Total Edges,\
-							  New Edges,\
-							  Nodes removed,\
-							  Fvs size,\
-							  Initial Cycles,\
+			if (!is_gpu_timings)
+				fprintf(fout,
+						"Total_Nodes,\
+							  Total_Edges,\
+							  New_Edges,\
+							  Node_removed,\
+							  Fvs_size,\
+							  Initial_Cycles,\
 							  Final_cycles,\
 							  Total_Weight,\
 							  Construction_trees(s),\
@@ -285,12 +285,13 @@ struct stats {
 							  Main_loop(s),\
 							  Total_time(s)\n");
 			else
-				fprintf(fout,"Total Nodes,\
-							  Total Edges,\
-							  New Edges,\
-							  Nodes removed,\
-							  Fvs size,\
-							  Initial Cycles,\
+				fprintf(fout,
+						"Total_Nodes,\
+							  Total_Edges,\
+							  New_Edges,\
+							  Nodes_removed,\
+							  Fvs_size,\
+							  Initial_Cycles,\
 							  Final_cycles,\
 							  Total_Weight,\
 							  nchunks,\
@@ -309,25 +310,29 @@ struct stats {
 							  Total_time(s)\n");
 		}
 
-		if(!is_gpu_timings)
+		if (!is_gpu_timings)
 			fprintf(fout,
 					"%5d,%5d,%5d,%5d,%5d,%5d,%5d,%5d,%15lf,%15lf,%15lf,%15lf,%15lf,%15lf,%15lf,%15lf\n",
-					num_nodes, edges, new_edges, num_nodes_removed, num_fvs, num_initial_cycles,\
-					num_final_cycles, total_weight, time_construction_trees, time_collect_cycles,\
-					cycle_inspection_time, precompute_shortest_path_time, independence_test_time,\
-					time_construction_trees + time_collect_cycles, total_time,\
+					num_nodes, edges, new_edges, num_nodes_removed, num_fvs,
+					num_initial_cycles, num_final_cycles, total_weight,
+					time_construction_trees, time_collect_cycles,
+					cycle_inspection_time, precompute_shortest_path_time,
+					independence_test_time,
+					time_construction_trees + time_collect_cycles, total_time,
 					total_time + time_construction_trees + time_collect_cycles);
 
 		else
 			fprintf(fout,
 					"%5d,%5d,%5d,%5d,%5d,%5d,%5d,%5d,%5d,%5d,%5d,%5d,%5d,%s,\
 					%15lf,%15lf,%15lf,%15lf,%15lf,%15lf,%15lf,%15lf\n",
-					num_nodes, edges, new_edges, num_nodes_removed, num_fvs, num_initial_cycles,\
-					num_final_cycles, total_weight, nchunks, nstreams, total_memory_usage,\
-					static_memory_usage, variable_memory_usage, load_entire_memory?"YES":"NO",\
-					time_construction_trees, time_collect_cycles, cycle_inspection_time, gpu_timings,
-					independence_test_time, time_construction_trees + time_collect_cycles,
-					total_time, total_time + time_construction_trees + time_collect_cycles);
+					num_nodes, edges, new_edges, num_nodes_removed, num_fvs,
+					num_initial_cycles, num_final_cycles, total_weight, nchunks,
+					nstreams, total_memory_usage, static_memory_usage,
+					variable_memory_usage, load_entire_memory ? "YES" : "NO",
+					time_construction_trees, time_collect_cycles,
+					cycle_inspection_time, gpu_timings, independence_test_time,
+					time_construction_trees + time_collect_cycles, total_time,
+					total_time + time_construction_trees + time_collect_cycles);
 
 		fclose(fout);
 	}
