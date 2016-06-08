@@ -64,9 +64,9 @@ void gpu_struct::calculate_memory() {
 
 	total_memory_bytes += static_memory_bytes + variable_memory_bytes;
 
-	info->setTotalMemoryUsage(total_memory_bytes / size_in_mb);
-	info->setStaticMemoryUsage(static_memory_bytes /size_in_mb);
-	info->setVariableMemoryUsage(variable_memory_bytes / size_in_mb);
+	info->setTotalMemoryUsage((double)total_memory_bytes / size_in_mb);
+	info->setStaticMemoryUsage((double)static_memory_bytes /size_in_mb);
+	info->setVariableMemoryUsage((double)variable_memory_bytes / size_in_mb);
 
 	printf("Static Memory = %lf mb\n", static_memory_bytes / size_in_mb);
 	printf("Variable Memory = %lf mb\n", variable_memory_bytes / size_in_mb);

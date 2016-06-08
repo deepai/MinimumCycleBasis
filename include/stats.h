@@ -29,9 +29,9 @@ struct stats {
 	//GPU STATS
 	int nchunks;
 	int nstreams;
-	size_t total_memory_usage;
-	size_t static_memory_usage;
-	size_t variable_memory_usage;
+	double total_memory_usage;
+	double static_memory_usage;
+	double variable_memory_usage;
 
 	bool is_gpu_timings;
 
@@ -213,11 +213,11 @@ struct stats {
 		return precompute_shortest_path_time;
 	}
 
-	size_t getStaticMemoryUsage() const {
+	double getStaticMemoryUsage() const {
 		return static_memory_usage;
 	}
 
-	void setStaticMemoryUsage(size_t staticMemoryUsage) {
+	void setStaticMemoryUsage(double staticMemoryUsage) {
 		static_memory_usage = staticMemoryUsage;
 	}
 
@@ -229,11 +229,11 @@ struct stats {
 		return time_construction_trees;
 	}
 
-	size_t getTotalMemoryUsage() const {
+	double getTotalMemoryUsage() const {
 		return total_memory_usage;
 	}
 
-	void setTotalMemoryUsage(size_t totalMemoryUsage) {
+	void setTotalMemoryUsage(double totalMemoryUsage) {
 		total_memory_usage = totalMemoryUsage;
 	}
 
@@ -245,7 +245,7 @@ struct stats {
 		return total_weight;
 	}
 
-	size_t getVariableMemoryUsage() const {
+	double getVariableMemoryUsage() const {
 		return variable_memory_usage;
 	}
 
@@ -296,9 +296,9 @@ struct stats {
 							  Total_Weight,\
 							  nchunks,\
 							  nstreams,\
-							  total_memory_usage,\
-							  static_memory_usage,\
-							  variable_memory_usage,\
+							  total_memory_usage(mb),\
+							  static_memory_usage(mb),\
+							  variable_memory_usage(mb),\
 							  load_entire_memory,\
 							  Construction_trees(s),\
 							  Collect_cycles(s),\
@@ -323,7 +323,7 @@ struct stats {
 
 		else
 			fprintf(fout,
-					"%5d,%5d,%5d,%5d,%5d,%5d,%5d,%5d,%5d,%5d,%5d,%5d,%5d,%s,\
+					"%5d,%5d,%5d,%5d,%5d,%5d,%5d,%5d,%5d,%5d,%15lf,%15lf,%15lf,%s,\
 					%15lf,%15lf,%15lf,%15lf,%15lf,%15lf,%15lf,%15lf\n",
 					num_nodes, edges, new_edges, num_nodes_removed, num_fvs,
 					num_initial_cycles, num_final_cycles, total_weight, nchunks,
