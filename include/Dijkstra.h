@@ -202,7 +202,7 @@ struct dijkstra {
 		edges.clear();
 	}
 
-	bool is_edge_cycle(unsigned edge_offset, int &total_weight, unsigned src) {
+	bool is_edge_cycle(unsigned edge_offset, int &total_weight, unsigned src, int &Su, int &Sv, int &Ou, int &Ov) {
 		unsigned row, col, orig_row, orig_col;
 		total_weight = 0;
 
@@ -234,7 +234,19 @@ struct dijkstra {
 		if ((fvs_array[col] >= 0) && (src > col))
 			return false;
 
+		Su = row;
+		Sv = col;
+
+		Ou = edge_offsets[row];
+		Ov = edge_offsets[col];
+
 		while (row != col) {
+
+			Su = row;
+			Sv = col;
+			Ou = edge_offsets[row];
+			Ov = edge_offsets[col];
+
 			row = parent[row];
 			col = parent[col];
 

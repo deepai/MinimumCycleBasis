@@ -60,16 +60,19 @@ struct worker_thread {
 
 		int count_cycle = 0;
 
+		int Su,Sv,Ou,Ov;
+
 		for (int i = 0; i < non_tree_edges->size(); i++) {
 			total_weight = 0;
 			is_edge_cycle = helper->is_edge_cycle(non_tree_edges->at(i),
-					total_weight, src);
+					total_weight, src, Su, Sv, Ou, Ov);
 
 			if (is_edge_cycle) {
 				cycle *cle = new cycle(trees, sp_tree->root,
 						non_tree_edges->at(i));
 
 				cle->total_length = total_weight;
+				cle->set_s_values(Su,Sv,Ou,Ov);
 
 				storage->add_cycle(src, std::min(non_tree_edges->at(i),helper->graph->reverse_edge->at(non_tree_edges->at(i))), cle);
 
@@ -109,16 +112,19 @@ struct worker_thread {
 
 		int count_cycle = 0;
 
+		int Su,Sv,Ou,Ov;
+
 		for (int i = 0; i < non_tree_edges->size(); i++) {
 			total_weight = 0;
 			is_edge_cycle = helper->is_edge_cycle(non_tree_edges->at(i),
-					total_weight, src);
+					total_weight, src, Su, Sv, Ou, Ov);
 
 			if (is_edge_cycle) {
 				cycle *cle = new cycle(trees, sp_tree->root,
 						non_tree_edges->at(i));
 
 				cle->total_length = total_weight;
+				cle->set_s_values(Su,Sv,Ou,Ov);
 
 				storage->add_cycle(src,std::min(non_tree_edges->at(i),helper->graph->reverse_edge->at(non_tree_edges->at(i))),cle);
 

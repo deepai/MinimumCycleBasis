@@ -18,6 +18,8 @@ struct cycle {
 
 	int ID;
 
+	int Su,Sv,Ou,Ov;
+
 	bool operator<(const cycle &rhs) const {
 		return (total_length < rhs.total_length);
 	}
@@ -32,6 +34,13 @@ struct cycle {
 		trees = tr;
 		non_tree_edge_index = index;
 		this->root = root;
+	}
+
+	void set_s_values(int Su,int Sv,int Ou,int Ov){
+		this->Su = Su;
+		this->Sv = Sv;
+		this->Ou = Ou;
+		this->Ov = Ov;
 	}
 
 	unsigned get_root() {
