@@ -71,9 +71,7 @@ struct worker_thread {
 
 				cle->total_length = total_weight;
 
-				storage->add_cycle(src,
-						helper->graph->rows->at(non_tree_edges->at(i)),
-						helper->graph->columns->at(non_tree_edges->at(i)), cle);
+				storage->add_cycle(src, std::min(non_tree_edges->at(i),helper->graph->reverse_edge->at(non_tree_edges->at(i))), cle);
 
 				count_cycle++;
 			}
@@ -122,9 +120,7 @@ struct worker_thread {
 
 				cle->total_length = total_weight;
 
-				storage->add_cycle(src,
-						helper->graph->rows->at(non_tree_edges->at(i)),
-						helper->graph->columns->at(non_tree_edges->at(i)), cle);
+				storage->add_cycle(src,std::min(non_tree_edges->at(i),helper->graph->reverse_edge->at(non_tree_edges->at(i))),cle);
 
 				count_cycle++;
 			}

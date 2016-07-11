@@ -22,7 +22,7 @@ struct list_common_cycles {
 
 struct cycle_storage {
 	int Nodes;
-	std::vector<std::unordered_map<unsigned long long, list_common_cycles*> > list_cycles;
+	std::vector<std::unordered_map<int, list_common_cycles*> > list_cycles;
 
 	inline unsigned long long combine(unsigned u, unsigned v) {
 		unsigned long long value = u;
@@ -42,14 +42,13 @@ struct cycle_storage {
 		list_cycles.clear();
 	}
 
-	void add_cycle(unsigned root, unsigned u, unsigned v, cycle *cle) {
-		unsigned long long index = combine(std::min(u, v), std::max(u, v));
+	void add_cycle(unsigned root, int edge_index , cycle *cle) {
 
-		if (list_cycles[root].find(index) == list_cycles[root].end())
+		if (list_cycles[root].find(edge_index) == list_cycles[root].end())
 			list_cycles[root].insert(
-					std::make_pair(index, new list_common_cycles(cle)));
+					std::make_pair(edge_index, new list_common_cycles(cle)));
 		else
-			list_cycles[root][index]->add_cycle(cle);
+			list_cycles[root][edge_index]->add_cycle(cle);
 	}
 
 	void clear_cycles() {

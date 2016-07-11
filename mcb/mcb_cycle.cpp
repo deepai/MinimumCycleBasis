@@ -177,7 +177,7 @@ int main(int argc, char* argv[]) {
 	std::list<cycle*> list_cycle;
 
 	for (int j = 0; j < storage->list_cycles.size(); j++) {
-		for (std::unordered_map<unsigned long long, list_common_cycles*>::iterator it =
+		for (std::unordered_map<int, list_common_cycles*>::iterator it =
 				storage->list_cycles[j].begin();
 				it != storage->list_cycles[j].end(); it++) {
 			for (int k = 0; k < it->second->listed_cycles.size(); k++) {
