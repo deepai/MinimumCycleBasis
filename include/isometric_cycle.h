@@ -10,9 +10,9 @@ struct isometric_cycle {
 	int *root;
 
 	cycle_storage *storage;
-	std::vector<cycle*> *list_cycles;
+	std::vector<cycle*> list_cycles;
 
-	isometric_cycle(int N, cycle_storage *store, std::vector<cycle*> *list) {
+	isometric_cycle(int N, cycle_storage *store) {
 		num_cycles = N;
 		root = new int[num_cycles];
 
@@ -20,11 +20,24 @@ struct isometric_cycle {
 			root[i] = i;
 
 		storage = store;
-		list_cycles = list;
+		list_cycles.resize(N);
+
+		int i = 0;
+
+		for(int j = 0; j < storage->list_cycles.size(); j++){
+		 	for(auto pair : storage->list_cycles[j]){
+		 		for(auto cle : pair.second){
+		 			list_cycles[i++] = cle;
+		 		}
+		 	}
+		}
+
+		assert(i == num_cycles);
 	}
 
 	~isometric_cycle() {
 		delete[] root;
+		list_cycles.clear();
 	}
 
 	void merge(int i, int j) {
@@ -36,7 +49,7 @@ struct isometric_cycle {
 		if (root_x == root_y)
 			return;
 
-		if (list_cycles->at(root_x)->ID < list_cycles->at(root_y)->ID)
+		if (list_cycles[root_x]->ID < list_cycles[root_y]->ID)
 			root[root_y] = root_x;
 		else
 			root[root_x] = root_y;
@@ -50,91 +63,91 @@ struct isometric_cycle {
 		return root[i];
 	}
 
-	/*
-	 * This method is used to obtain the isometric cycles and only keep one cycle among the same list of isometric cycles.
-	 *
-	 */
-	void obtain_isometric_cycles() {
-		for (int i = 0; i < num_cycles; i++) {
-			cycle *cle = list_cycles->at(i);
+// 	/*
+// 	 * This method is used to obtain the isometric cycles and only keep one cycle among the same list of isometric cycles.
+// 	 *
+// 	 */
+// 	void obtain_isometric_cycles() {
+// 		for (int i = 0; i < num_cycles; i++) {
+// 			cycle *cle = list_cycles->at(i);
 
-			assert(storage->list_trees[cle->tree->root] != NULL);
-			assert(cle->ID < num_cycles);
+// 			assert(storage->list_trees[cle->tree->root] != NULL);
+// 			assert(cle->ID < num_cycles);
 
-			std::vector<unsigned> *s_values = cle->tree->s_values;
+// 			std::vector<unsigned> *s_values = cle->tree->s_values;
 
-			unsigned row, col, src;
+// 			unsigned row, col, src;
 
-			row = cle->tree->parent_graph->rows->at(cle->non_tree_edge_index);
-			col = cle->tree->parent_graph->columns->at(
-					cle->non_tree_edge_index);
+// 			row = cle->tree->parent_graph->rows->at(cle->non_tree_edge_index);
+// 			col = cle->tree->parent_graph->columns->at(
+// 					cle->non_tree_edge_index);
 
-			src = cle->tree->root;
+// 			src = cle->tree->root;
 
-			if (s_values->at(row) != s_values->at(col)) {
-				if ((src == row)) {
-					cycle *match_cycle = storage->get_cycle(col, row, col, cle,
-							cle->non_tree_edge_index);
-					if (match_cycle != NULL) {
-						merge(cle->ID, match_cycle->ID);
+// 			if (s_values->at(row) != s_values->at(col)) {
+// 				if ((src == row)) {
+// 					cycle *match_cycle = storage->get_cycle(col, row, col, cle,
+// 							cle->non_tree_edge_index);
+// 					if (match_cycle != NULL) {
+// 						merge(cle->ID, match_cycle->ID);
 
-#ifdef PRINT
-						printf("\n");
-						cle->print_line();
-						match_cycle->print_line();
-						printf("\n");
-#endif
+// #ifdef PRINT
+// 						printf("\n");
+// 						cle->print_line();
+// 						match_cycle->print_line();
+// 						printf("\n");
+// #endif
 
-					}
-				} else {
-					int r1 = s_values->at(row);
-					std::vector<unsigned> *s_value_r1 = storage->get_s_value(
-							r1);
-					std::vector<unsigned> *s_value_col = storage->get_s_value(
-							col);
+// 					}
+// 				} else {
+// 					int r1 = s_values->at(row);
+// 					std::vector<unsigned> *s_value_r1 = storage->get_s_value(
+// 							r1);
+// 					std::vector<unsigned> *s_value_col = storage->get_s_value(
+// 							col);
 
-					if ((s_value_r1 != NULL) && (src == s_value_r1->at(col))) {
-						cycle *match_cycle = storage->get_cycle(r1, row, col,
-								cle, cle->non_tree_edge_index);
-						if (match_cycle != NULL) {
-							merge(cle->ID, match_cycle->ID);
+// 					if ((s_value_r1 != NULL) && (src == s_value_r1->at(col))) {
+// 						cycle *match_cycle = storage->get_cycle(r1, row, col,
+// 								cle, cle->non_tree_edge_index);
+// 						if (match_cycle != NULL) {
+// 							merge(cle->ID, match_cycle->ID);
 
-#ifdef PRINT
-							printf("\n");
-							cle->print_line();
-							match_cycle->print_line();
-							printf("\n");
-#endif
-						}
-					} else if ((s_value_col != NULL)
-							&& (row == s_value_col->at(r1))) {
-						cycle *match_cycle = storage->get_cycle(col, src, r1,
-								cle);
-						if (match_cycle != NULL) {
-							merge(cle->ID, match_cycle->ID);
+// #ifdef PRINT
+// 							printf("\n");
+// 							cle->print_line();
+// 							match_cycle->print_line();
+// 							printf("\n");
+// #endif
+// 						}
+// 					} else if ((s_value_col != NULL)
+// 							&& (row == s_value_col->at(r1))) {
+// 						cycle *match_cycle = storage->get_cycle(col, src, r1,
+// 								cle);
+// 						if (match_cycle != NULL) {
+// 							merge(cle->ID, match_cycle->ID);
 
-#ifdef PRINT
-							printf("\n");
-							cle->print_line();
-							match_cycle->print_line();
-							printf("\n");
-#endif
-						}
-					}
-				}
-			} else {
-			}
-		}
+// #ifdef PRINT
+// 							printf("\n");
+// 							cle->print_line();
+// 							match_cycle->print_line();
+// 							printf("\n");
+// #endif
+// 						}
+// 					}
+// 				}
+// 			} else {
+// 			}
+// 		}
 
-		for (int i = 0; i < num_cycles; i++) {
-			if (list_cycles->at(i) == NULL)
-				continue;
-			if (root[list_cycles->at(i)->ID] != list_cycles->at(i)->ID) {
-				delete list_cycles->at(i);
-				list_cycles->at(i) = NULL;
-			}
-		}
-	}
+// 		for (int i = 0; i < num_cycles; i++) {
+// 			if (list_cycles->at(i) == NULL)
+// 				continue;
+// 			if (root[list_cycles->at(i)->ID] != list_cycles->at(i)->ID) {
+// 				delete list_cycles->at(i);
+// 				list_cycles->at(i) = NULL;
+// 			}
+// 		}
+// 	}
 
 };
 

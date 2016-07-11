@@ -30,6 +30,7 @@
 #include "FVS.h"
 #include "compressed_trees.h"
 #include "gpu_task.h"
+#include "isometric_cycle.h"
 
 #include <gpu/common.cuh>
 
@@ -235,6 +236,8 @@ int main(int argc, char* argv[]) {
 		count_cycles += multi_work[threadId]->produce_sp_tree_and_cycles_warp(i,
 				reduced_graph);
 	}
+
+	isometric_cycle common_cycles(count_cycles,storage);
 
 	info.setTimeConstructionTrees(globalTimer.get_event_time());
 

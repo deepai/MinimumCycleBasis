@@ -1,7 +1,7 @@
 #ifndef _H_CYCLE_SEARCH
 #define _H_CYCLE_SEARCH
 
-#include <unordered_map>
+#include <map>
 #include <vector>
 #include <utility>
 #include <climits>
@@ -10,7 +10,7 @@
 
 struct cycle_storage {
 	int Nodes;
-	std::vector<std::unordered_map<int, std::vector<cycle*> > > list_cycles;
+	std::vector<std::map<int, std::vector<cycle*> > > list_cycles;
 
 	inline unsigned long long combine(unsigned u, unsigned v) {
 		unsigned long long value = u;
