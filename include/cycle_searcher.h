@@ -40,6 +40,14 @@ struct cycle_storage {
 		}
 		list_cycles.clear();
 	}
+
+	std::vector<cycle*>* match_cycles(unsigned root,int edge_index)
+	{
+		if(list_cycles[root][edge_index].empty())
+			return NULL;
+		else
+			return &(list_cycles[root][edge_index]);
+	}
 };
 
 #endif

@@ -238,6 +238,7 @@ int main(int argc, char* argv[]) {
 	}
 
 	isometric_cycle common_cycles(count_cycles,storage);
+	common_cycles.obtain_isometric_cycles();
 
 	info.setTimeConstructionTrees(globalTimer.get_event_time());
 
