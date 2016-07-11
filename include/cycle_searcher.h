@@ -8,21 +8,9 @@
 
 #include "cycles.h"
 
-struct list_common_cycles {
-	std::vector<cycle*> listed_cycles;
-
-	list_common_cycles(cycle *cle) {
-		listed_cycles.push_back(cle);
-	}
-
-	inline void add_cycle(cycle *cle) {
-		listed_cycles.push_back(cle);
-	}
-};
-
 struct cycle_storage {
 	int Nodes;
-	std::vector<std::unordered_map<int, list_common_cycles*> > list_cycles;
+	std::vector<std::unordered_map<int, std::vector<cycle*> > > list_cycles;
 
 	inline unsigned long long combine(unsigned u, unsigned v) {
 		unsigned long long value = u;
@@ -43,12 +31,7 @@ struct cycle_storage {
 	}
 
 	void add_cycle(unsigned root, int edge_index , cycle *cle) {
-
-		if (list_cycles[root].find(edge_index) == list_cycles[root].end())
-			list_cycles[root].insert(
-					std::make_pair(edge_index, new list_common_cycles(cle)));
-		else
-			list_cycles[root][edge_index]->add_cycle(cle);
+			list_cycles[root][edge_index].push_back(cle);
 	}
 
 	void clear_cycles() {
