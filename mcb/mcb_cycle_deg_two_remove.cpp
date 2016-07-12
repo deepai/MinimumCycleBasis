@@ -240,6 +240,10 @@ int main(int argc, char* argv[]) {
 	isometric_cycle common_cycles(count_cycles,storage);
 	common_cycles.obtain_isometric_cycles();
 
+	std::cout << common_cycles.count_isometric_cycles() << std::endl;
+
+	exit(1);
+
 	info.setTimeConstructionTrees(globalTimer.get_event_time());
 
 	//Record time for collection of cycles.
