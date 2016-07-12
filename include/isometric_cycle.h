@@ -89,24 +89,16 @@ struct isometric_cycle {
 
  			if (cle->Su != cle->Sv) {
 				if ((src == row)) {
- 					std::vector<cycle*> *match_cycles = storage->match_cycles(src,std::min((int)cle->non_tree_edge_index,reverse_edge));
-
+ 					std::vector<cycle*> *match_cycles = storage->match_cycles(src,cle->non_tree_edge_index);
  					if (match_cycles != NULL) {
  						for(int j=0;j<match_cycles->size();j++)
 	 						merge(cle->ID, match_cycles->at(j)->ID);
-
-// #ifdef PRINT
-// 						printf("\n");
-// 						cle->print_line();
-// 						match_cycle->print_line();
-// 						printf("\n");
-// #endif
-
  					}
- 				} else {
+ 				}
+ 				else
+ 				{
  					int r1 = cle->Su;
- 					
- 					std::vector<cycle*> *match_cycles = storage->match_cycles(r1,std::min((int)cle->non_tree_edge_index,reverse_edge));
+ 					std::vector<cycle*> *match_cycles = storage->match_cycles(r1,cle->non_tree_edge_index);
  					if (match_cycles != NULL) {
  						for(int j=0;j<match_cycles->size();j++)
  						{
@@ -122,7 +114,7 @@ struct isometric_cycle {
  								else
  								{
  									int r_edge = cle->trees->parent_graph->reverse_edge->at(cle->Ou);
- 									std::vector<cycle*> *match_next_cycles = storage->match_cycles(col,std::min((int)r_edge,cle->Ou));
+ 									std::vector<cycle*> *match_next_cycles = storage->match_cycles(col,cle->Ou);
  									for(int k=0;k<match_next_cycles->size();k++){
 
  										int edge_temp = match_next_cycles->at(k)->non_tree_edge_index;
@@ -144,6 +136,15 @@ struct isometric_cycle {
  				}
  			}
  		}
+ 	}
+
+ 	int count_isometric_cycles()
+ 	{
+ 		int count = 0;
+ 		for(int i=0;i<num_cycles;i++)
+ 			if(root[i] == i)
+ 				count++;
+ 		return count;
  	}
 
 };
